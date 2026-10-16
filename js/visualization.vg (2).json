@@ -1,0 +1,358 @@
+{
+  "$schema": "https://vega.github.io/schema/vega/v6.json",
+  "description": "Choropleth map of the percentage of each Australian state and territory's population aged 65 and over in 2025.",
+  "autosize": {"type": "fit-x", "contains": "padding"},
+  "background": "#FFFFFF",
+  "padding": 5,
+  "width": 800,
+  "height": 520,
+  "title": {
+    "text": "Where Is Australia Ageing the Most?",
+    "subtitle": "Percentage of each state's population aged 65 and over in 2025.",
+    "anchor": "start",
+    "font": "Manrope, sans-serif",
+    "fontSize": 28,
+    "fontWeight": 800,
+    "color": "#183B4E",
+    "subtitleFont": "Inter, sans-serif",
+    "subtitleFontSize": 15,
+    "subtitleColor": "#64757A",
+    "subtitlePadding": 8,
+    "offset": 20
+  },
+  "style": "view",
+  "data": [
+    {"name": "hoverState_store"},
+    {
+      "name": "source_1",
+      "url": "https://raw.githubusercontent.com/zoyeana/aged-care-australia/refs/heads/main/data/australia_ageing_by_state_2025.csv",
+      "format": {"type": "csv", "delimiter": ","}
+    },
+    {
+      "name": "source_2",
+      "values": [
+        {"lon": 149, "lat": -35.5, "order": 0},
+        {"lon": 154.5, "lat": -35.5, "order": 1}
+      ]
+    },
+    {"name": "source_3", "values": [{"lon": 149, "lat": -35.5}]},
+    {
+      "name": "source_4",
+      "values": [{"lon": 154.5, "lat": -35.5, "label": "ACT"}]
+    },
+    {
+      "name": "source_0",
+      "url": "https://raw.githubusercontent.com/rowanhogan/australian-states/refs/heads/master/states.geojson",
+      "format": {"type": "json", "property": "features", "parse": {}},
+      "transform": [
+        {
+          "type": "formula",
+          "expr": "datum[\"properties\"] && datum[\"properties\"][\"STATE_NAME\"]",
+          "as": "properties.STATE_NAME"
+        },
+        {
+          "type": "lookup",
+          "from": "source_1",
+          "key": "State",
+          "fields": ["properties.STATE_NAME"],
+          "values": ["Population65Plus", "TotalPopulation", "Percentage65Plus"]
+        },
+        {
+          "type": "formula",
+          "expr": "toNumber(datum.Percentage65Plus)",
+          "as": "pct"
+        },
+        {
+          "type": "formula",
+          "expr": "toNumber(datum.Population65Plus)",
+          "as": "pop65"
+        },
+        {
+          "type": "formula",
+          "expr": "toNumber(datum.TotalPopulation)",
+          "as": "popTotal"
+        },
+        {
+          "type": "formula",
+          "expr": "isValid(datum.pct) ? format(datum.pct, '.2f') + '%' : 'No data'",
+          "as": "pctText"
+        }
+      ]
+    },
+    {
+      "name": "data_0",
+      "source": "source_0",
+      "transform": [
+        {
+          "type": "filter",
+          "expr": "isValid(datum[\"pct\"]) && isFinite(+datum[\"pct\"])"
+        }
+      ]
+    },
+    {
+      "name": "data_1",
+      "source": "source_2",
+      "transform": [
+        {
+          "type": "geojson",
+          "fields": ["lon", "lat"],
+          "signal": "layer_2_geojson_0"
+        },
+        {
+          "type": "geopoint",
+          "projection": "projection",
+          "fields": ["lon", "lat"],
+          "as": ["layer_2_x", "layer_2_y"]
+        }
+      ]
+    },
+    {
+      "name": "data_2",
+      "source": "source_3",
+      "transform": [
+        {
+          "type": "geojson",
+          "fields": ["lon", "lat"],
+          "signal": "layer_3_geojson_0"
+        },
+        {
+          "type": "geopoint",
+          "projection": "projection",
+          "fields": ["lon", "lat"],
+          "as": ["layer_3_x", "layer_3_y"]
+        }
+      ]
+    },
+    {
+      "name": "data_3",
+      "source": "source_4",
+      "transform": [
+        {
+          "type": "geojson",
+          "fields": ["lon", "lat"],
+          "signal": "layer_4_geojson_0"
+        },
+        {
+          "type": "geopoint",
+          "projection": "projection",
+          "fields": ["lon", "lat"],
+          "as": ["layer_4_x", "layer_4_y"]
+        }
+      ]
+    }
+  ],
+  "projections": [
+    {
+      "name": "projection",
+      "size": {"signal": "[width, height]"},
+      "fit": {
+        "signal": "[data('data_0'), data('source_0'), layer_2_geojson_0, layer_3_geojson_0, layer_4_geojson_0]"
+      },
+      "type": "mercator"
+    }
+  ],
+  "signals": [
+    {
+      "name": "unit",
+      "value": {},
+      "on": [
+        {"events": "pointermove", "update": "isTuple(group()) ? group() : unit"}
+      ]
+    },
+    {
+      "name": "hoverState",
+      "update": "vlSelectionResolve(\"hoverState_store\", \"union\", true, true)"
+    },
+    {
+      "name": "hoverState_tuple",
+      "on": [
+        {
+          "events": [{"source": "scope", "type": "pointerover"}],
+          "update": "datum && item().mark.marktype !== 'group' && indexof(item().mark.role, 'legend') < 0 ? {unit: \"layer_0\", fields: hoverState_tuple_fields, values: [(item().isVoronoi ? datum.datum : datum)[\"properties.STATE_NAME\"]]} : null",
+          "force": true
+        },
+        {"events": [{"source": "view", "type": "pointerout"}], "update": "null"}
+      ]
+    },
+    {
+      "name": "hoverState_tuple_fields",
+      "value": [{"type": "E", "field": "properties\\.STATE_NAME"}]
+    },
+    {
+      "name": "hoverState_toggle",
+      "value": false,
+      "on": [
+        {
+          "events": [{"source": "scope", "type": "pointerover"}],
+          "update": "event.shiftKey"
+        },
+        {
+          "events": [{"source": "view", "type": "pointerout"}],
+          "update": "false"
+        }
+      ]
+    },
+    {
+      "name": "hoverState_modify",
+      "on": [
+        {
+          "events": {"signal": "hoverState_tuple"},
+          "update": "modify(\"hoverState_store\", hoverState_toggle ? null : hoverState_tuple, hoverState_toggle ? null : true, hoverState_toggle ? hoverState_tuple : null)"
+        }
+      ]
+    }
+  ],
+  "marks": [
+    {
+      "name": "layer_0_marks",
+      "type": "shape",
+      "style": ["geoshape"],
+      "interactive": true,
+      "from": {"data": "data_0"},
+      "encode": {
+        "update": {
+          "stroke": {"value": "#FFFFFF"},
+          "strokeWidth": {"value": 0.8},
+          "fill": [
+            {"test": "!isValid(datum.pct)", "value": "#E9E5DB"},
+            {"scale": "color", "field": "pct"}
+          ],
+          "tooltip": {
+            "signal": "{\"State\": isValid(datum[\"properties.STATE_NAME\"]) ? isArray(datum[\"properties.STATE_NAME\"]) ? join(datum[\"properties.STATE_NAME\"], '\\n') : datum[\"properties.STATE_NAME\"] : \"\"+datum[\"properties.STATE_NAME\"], \"Population aged 65+\": format(datum[\"pop65\"], \",.0f\"), \"Total population\": format(datum[\"popTotal\"], \",.0f\"), \"Percentage aged 65+\": isValid(datum[\"pctText\"]) ? isArray(datum[\"pctText\"]) ? join(datum[\"pctText\"], '\\n') : datum[\"pctText\"] : \"\"+datum[\"pctText\"]}"
+          },
+          "ariaRoleDescription": {"value": "geoshape"},
+          "description": {
+            "signal": "\"pct: \" + (format(datum[\"pct\"], \".0f\")) + \"; State: \" + (isValid(datum[\"properties.STATE_NAME\"]) ? isArray(datum[\"properties.STATE_NAME\"]) ? join(datum[\"properties.STATE_NAME\"], ' ') : datum[\"properties.STATE_NAME\"] : \"\"+datum[\"properties.STATE_NAME\"]) + \"; Population aged 65+: \" + (format(datum[\"pop65\"], \",.0f\")) + \"; Total population: \" + (format(datum[\"popTotal\"], \",.0f\")) + \"; Percentage aged 65+: \" + (isValid(datum[\"pctText\"]) ? isArray(datum[\"pctText\"]) ? join(datum[\"pctText\"], ' ') : datum[\"pctText\"] : \"\"+datum[\"pctText\"])"
+          }
+        }
+      },
+      "transform": [{"type": "geoshape", "projection": "projection"}]
+    },
+    {
+      "name": "layer_1_marks",
+      "type": "shape",
+      "style": ["geoshape"],
+      "interactive": true,
+      "from": {"data": "source_0"},
+      "encode": {
+        "update": {
+          "fill": {"value": null},
+          "stroke": {"value": "#183B4E"},
+          "strokeWidth": {"value": 2.2},
+          "opacity": [
+            {
+              "test": "length(data(\"hoverState_store\")) && vlSelectionTest(\"hoverState_store\", datum)",
+              "value": 1
+            },
+            {"value": 0}
+          ],
+          "ariaRoleDescription": {"value": "geoshape"}
+        }
+      },
+      "transform": [{"type": "geoshape", "projection": "projection"}]
+    },
+    {
+      "name": "layer_2_marks",
+      "type": "line",
+      "style": ["line"],
+      "sort": {"field": ["datum[\"order\"]"], "order": ["ascending"]},
+      "interactive": false,
+      "from": {"data": "data_1"},
+      "encode": {
+        "update": {
+          "strokeWidth": {"value": 1},
+          "stroke": {"value": "#64757A"},
+          "description": {
+            "signal": "\"lon: \" + (format(datum[\"lon\"], \"\")) + \"; lat: \" + (format(datum[\"lat\"], \"\")) + \"; order: \" + (isValid(datum[\"order\"]) ? isArray(datum[\"order\"]) ? join(datum[\"order\"], ' ') : datum[\"order\"] : \"\"+datum[\"order\"])"
+          },
+          "x": {"field": "layer_2_x"},
+          "y": {"field": "layer_2_y"}
+        }
+      }
+    },
+    {
+      "name": "layer_3_marks",
+      "type": "symbol",
+      "style": ["circle"],
+      "interactive": false,
+      "from": {"data": "data_2"},
+      "encode": {
+        "update": {
+          "opacity": {"value": 0.7},
+          "size": {"value": 28},
+          "fill": {"value": "#183B4E"},
+          "ariaRoleDescription": {"value": "circle"},
+          "description": {
+            "signal": "\"lon: \" + (format(datum[\"lon\"], \"\")) + \"; lat: \" + (format(datum[\"lat\"], \"\"))"
+          },
+          "x": {"field": "layer_3_x"},
+          "y": {"field": "layer_3_y"},
+          "shape": {"value": "circle"}
+        }
+      }
+    },
+    {
+      "name": "layer_4_marks",
+      "type": "text",
+      "style": ["text"],
+      "interactive": false,
+      "from": {"data": "data_3"},
+      "encode": {
+        "update": {
+          "align": {"value": "left"},
+          "dx": {"value": 5},
+          "fontSize": {"value": 12},
+          "fontWeight": {"value": 600},
+          "fill": {"value": "#183B4E"},
+          "description": {
+            "signal": "\"lon: \" + (format(datum[\"lon\"], \"\")) + \"; lat: \" + (format(datum[\"lat\"], \"\")) + \"; label: \" + (isValid(datum[\"label\"]) ? isArray(datum[\"label\"]) ? join(datum[\"label\"], ' ') : datum[\"label\"] : \"\"+datum[\"label\"])"
+          },
+          "x": {"field": "layer_4_x"},
+          "y": {"field": "layer_4_y"},
+          "text": {
+            "signal": "isValid(datum[\"label\"]) ? datum[\"label\"] : \"\"+datum[\"label\"]"
+          },
+          "baseline": {"value": "middle"}
+        }
+      }
+    }
+  ],
+  "scales": [
+    {
+      "name": "color",
+      "type": "linear",
+      "domain": [9, 16, 23],
+      "range": ["#E4F1EE", "#86BDB4", "#183B4E"],
+      "clamp": true,
+      "interpolate": "hcl",
+      "zero": false
+    }
+  ],
+  "legends": [
+    {
+      "direction": "horizontal",
+      "format": ".0f",
+      "gradientLength": 320,
+      "gradientThickness": 12,
+      "labelColor": "#64757A",
+      "labelFontSize": 12,
+      "orient": "bottom",
+      "title": "Population aged 65+ (%)",
+      "titleColor": "#64757A",
+      "titleFontSize": 13,
+      "titleLimit": 400,
+      "values": [9, 13, 16, 19, 23],
+      "fill": "color"
+    }
+  ],
+  "config": {
+    "style": {
+      "guide-label": {"font": "Inter, sans-serif"},
+      "guide-title": {"font": "Inter, sans-serif"},
+      "group-title": {"font": "Inter, sans-serif"},
+      "group-subtitle": {"font": "Inter, sans-serif"},
+      "cell": {"stroke": null},
+      "text": {"font": "Inter, sans-serif"}
+    }
+  }
+}

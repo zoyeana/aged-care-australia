@@ -1,0 +1,294 @@
+{
+  "$schema": "https://vega.github.io/schema/vega/v6.json",
+  "description": "Heatmap of Home Care Package recipients by state and territory at 30 June, 2021 to 2025. Only reported values are shown.",
+  "background": "#FFFFFF",
+  "padding": 5,
+  "width": 620,
+  "title": {
+    "text": "How Has Home Care Usage Changed Across Australia?",
+    "subtitle": [
+      "Home Care Package recipients by state and territory, 2021–2025"
+    ],
+    "anchor": "start",
+    "font": "Manrope, sans-serif",
+    "fontSize": 28,
+    "fontWeight": 800,
+    "color": "#183B4E",
+    "subtitleFont": "Inter, sans-serif",
+    "subtitleFontSize": 14,
+    "subtitleColor": "#64757A",
+    "subtitlePadding": 8,
+    "offset": 20
+  },
+  "style": "cell",
+  "data": [
+    {"name": "hoverCell_store"},
+    {
+      "name": "source_0",
+      "url": "https://raw.githubusercontent.com/zoyeana/aged-care-australia/refs/heads/main/data/australia_home_care_by_state_2021_2025.csv",
+      "format": {
+        "type": "csv",
+        "parse": {"Year": "number", "HomeCareRecipients": "number"},
+        "delimiter": ","
+      },
+      "transform": [
+        {"type": "filter", "expr": "isValid(datum.HomeCareRecipients)"},
+        {
+          "type": "formula",
+          "expr": "datum.Year === 2025 ? datum.HomeCareRecipients : null",
+          "as": "val2025"
+        },
+        {
+          "type": "joinaggregate",
+          "as": ["sortKey"],
+          "ops": ["max"],
+          "fields": ["val2025"],
+          "groupby": ["State"]
+        },
+        {
+          "type": "joinaggregate",
+          "as": ["maxAll"],
+          "ops": ["max"],
+          "fields": ["HomeCareRecipients"]
+        },
+        {
+          "type": "formula",
+          "expr": "format(datum.HomeCareRecipients, ',.0f')",
+          "as": "countText"
+        },
+        {"type": "formula", "expr": "toString(datum.Year)", "as": "yearLabel"},
+        {
+          "type": "formula",
+          "expr": "datum[\"yearLabel\"]===\"2021\" ? 0 : datum[\"yearLabel\"]===\"2022\" ? 1 : datum[\"yearLabel\"]===\"2023\" ? 2 : datum[\"yearLabel\"]===\"2024\" ? 3 : datum[\"yearLabel\"]===\"2025\" ? 4 : 5",
+          "as": "x_yearLabel_sort_index"
+        }
+      ]
+    },
+    {
+      "name": "data_0",
+      "source": "source_0",
+      "transform": [
+        {
+          "type": "filter",
+          "expr": "isValid(datum[\"HomeCareRecipients\"]) && isFinite(+datum[\"HomeCareRecipients\"])"
+        }
+      ]
+    }
+  ],
+  "signals": [
+    {"name": "y_step", "value": 52},
+    {
+      "name": "height",
+      "update": "bandspace(domain('y').length, 0, 0) * y_step"
+    },
+    {
+      "name": "unit",
+      "value": {},
+      "on": [
+        {"events": "pointermove", "update": "isTuple(group()) ? group() : unit"}
+      ]
+    },
+    {
+      "name": "hoverCell",
+      "update": "vlSelectionResolve(\"hoverCell_store\", \"union\", true, true)"
+    },
+    {
+      "name": "hoverCell_tuple",
+      "on": [
+        {
+          "events": [{"source": "scope", "type": "pointerover"}],
+          "update": "datum && item().mark.marktype !== 'group' && indexof(item().mark.role, 'legend') < 0 ? {unit: \"layer_0\", fields: hoverCell_tuple_fields, values: [(item().isVoronoi ? datum.datum : datum)[\"State\"], (item().isVoronoi ? datum.datum : datum)[\"yearLabel\"]]} : null",
+          "force": true
+        },
+        {"events": [{"source": "view", "type": "pointerout"}], "update": "null"}
+      ]
+    },
+    {
+      "name": "hoverCell_tuple_fields",
+      "value": [
+        {"type": "E", "field": "State"},
+        {"type": "E", "field": "yearLabel"}
+      ]
+    },
+    {
+      "name": "hoverCell_toggle",
+      "value": false,
+      "on": [
+        {
+          "events": [{"source": "scope", "type": "pointerover"}],
+          "update": "event.shiftKey"
+        },
+        {
+          "events": [{"source": "view", "type": "pointerout"}],
+          "update": "false"
+        }
+      ]
+    },
+    {
+      "name": "hoverCell_modify",
+      "on": [
+        {
+          "events": {"signal": "hoverCell_tuple"},
+          "update": "modify(\"hoverCell_store\", hoverCell_toggle ? null : hoverCell_tuple, hoverCell_toggle ? null : true, hoverCell_toggle ? hoverCell_tuple : null)"
+        }
+      ]
+    }
+  ],
+  "marks": [
+    {
+      "name": "layer_0_marks",
+      "type": "rect",
+      "style": ["rect"],
+      "interactive": true,
+      "from": {"data": "data_0"},
+      "encode": {
+        "update": {
+          "stroke": [
+            {
+              "test": "length(data(\"hoverCell_store\")) && vlSelectionTest(\"hoverCell_store\", datum)",
+              "value": "#183B4E"
+            },
+            {"value": "#FFFFFF"}
+          ],
+          "strokeWidth": [
+            {
+              "test": "length(data(\"hoverCell_store\")) && vlSelectionTest(\"hoverCell_store\", datum)",
+              "value": 2.5
+            },
+            {"value": 2}
+          ],
+          "fill": {"scale": "color", "field": "HomeCareRecipients"},
+          "tooltip": {
+            "signal": "{\"State\": isValid(datum[\"State\"]) ? isArray(datum[\"State\"]) ? join(datum[\"State\"], '\\n') : datum[\"State\"] : \"\"+datum[\"State\"], \"Year (30 June)\": isValid(datum[\"yearLabel\"]) ? isArray(datum[\"yearLabel\"]) ? join(datum[\"yearLabel\"], '\\n') : datum[\"yearLabel\"] : \"\"+datum[\"yearLabel\"], \"Home Care Package recipients\": isValid(datum[\"countText\"]) ? isArray(datum[\"countText\"]) ? join(datum[\"countText\"], '\\n') : datum[\"countText\"] : \"\"+datum[\"countText\"]}"
+          },
+          "description": {
+            "signal": "\"yearLabel: \" + (isValid(datum[\"yearLabel\"]) ? isArray(datum[\"yearLabel\"]) ? join(datum[\"yearLabel\"], ' ') : datum[\"yearLabel\"] : \"\"+datum[\"yearLabel\"]) + \"; State: \" + (isValid(datum[\"State\"]) ? isArray(datum[\"State\"]) ? join(datum[\"State\"], ' ') : datum[\"State\"] : \"\"+datum[\"State\"]) + \"; HomeCareRecipients: \" + (format(datum[\"HomeCareRecipients\"], \",.0f\")) + \"; Year (30 June): \" + (isValid(datum[\"yearLabel\"]) ? isArray(datum[\"yearLabel\"]) ? join(datum[\"yearLabel\"], ' ') : datum[\"yearLabel\"] : \"\"+datum[\"yearLabel\"]) + \"; Home Care Package recipients: \" + (isValid(datum[\"countText\"]) ? isArray(datum[\"countText\"]) ? join(datum[\"countText\"], ' ') : datum[\"countText\"] : \"\"+datum[\"countText\"])"
+          },
+          "x": {"scale": "x", "field": "yearLabel"},
+          "width": {"signal": "max(0.25, bandwidth('x'))"},
+          "y": {"scale": "y", "field": "State"},
+          "height": {"signal": "max(0.25, bandwidth('y'))"}
+        }
+      }
+    },
+    {
+      "name": "layer_1_marks",
+      "type": "text",
+      "style": ["text"],
+      "interactive": false,
+      "from": {"data": "source_0"},
+      "encode": {
+        "update": {
+          "font": {"value": "Inter, sans-serif"},
+          "fontSize": {"value": 13},
+          "fontWeight": {"value": 600},
+          "fill": [
+            {
+              "test": "datum.HomeCareRecipients > 0.5 * datum.maxAll",
+              "value": "#FFFFFF"
+            },
+            {"value": "#183B4E"}
+          ],
+          "description": {
+            "signal": "\"yearLabel: \" + (isValid(datum[\"yearLabel\"]) ? isArray(datum[\"yearLabel\"]) ? join(datum[\"yearLabel\"], ' ') : datum[\"yearLabel\"] : \"\"+datum[\"yearLabel\"]) + \"; State: \" + (isValid(datum[\"State\"]) ? isArray(datum[\"State\"]) ? join(datum[\"State\"], ' ') : datum[\"State\"] : \"\"+datum[\"State\"]) + \"; countText: \" + (isValid(datum[\"countText\"]) ? isArray(datum[\"countText\"]) ? join(datum[\"countText\"], ' ') : datum[\"countText\"] : \"\"+datum[\"countText\"])"
+          },
+          "x": {"scale": "x", "field": "yearLabel", "band": 0.5},
+          "y": {"scale": "y", "field": "State", "band": 0.5},
+          "text": {
+            "signal": "isValid(datum[\"countText\"]) ? datum[\"countText\"] : \"\"+datum[\"countText\"]"
+          },
+          "align": {"value": "center"},
+          "baseline": {"value": "middle"}
+        }
+      }
+    }
+  ],
+  "scales": [
+    {
+      "name": "x",
+      "type": "band",
+      "domain": {
+        "data": "source_0",
+        "field": "yearLabel",
+        "sort": {"op": "min", "field": "x_yearLabel_sort_index"}
+      },
+      "range": [0, {"signal": "width"}],
+      "paddingInner": 0,
+      "paddingOuter": 0
+    },
+    {
+      "name": "y",
+      "type": "band",
+      "domain": {
+        "data": "source_0",
+        "field": "State",
+        "sort": {"op": "max", "field": "sortKey", "order": "descending"}
+      },
+      "range": {"step": {"signal": "y_step"}},
+      "paddingInner": 0,
+      "paddingOuter": 0
+    },
+    {
+      "name": "color",
+      "type": "linear",
+      "domain": {"data": "data_0", "field": "HomeCareRecipients"},
+      "range": ["#E3F1EC", "#216B65"],
+      "zero": true,
+      "interpolate": "hcl"
+    }
+  ],
+  "axes": [
+    {
+      "scale": "x",
+      "orient": "top",
+      "grid": false,
+      "domain": false,
+      "labelAngle": 0,
+      "labelColor": "#183B4E",
+      "labelFontSize": 14,
+      "labelFontWeight": 600,
+      "labelPadding": 8,
+      "ticks": false,
+      "labelBaseline": "bottom",
+      "zindex": 1
+    },
+    {
+      "scale": "y",
+      "orient": "left",
+      "grid": false,
+      "domain": false,
+      "labelColor": "#183B4E",
+      "labelFontSize": 13,
+      "labelPadding": 8,
+      "ticks": false,
+      "zindex": 1
+    }
+  ],
+  "legends": [
+    {
+      "direction": "horizontal",
+      "format": ",.0f",
+      "gradientLength": 320,
+      "gradientThickness": 12,
+      "labelColor": "#183B4E",
+      "labelFontSize": 12,
+      "orient": "bottom",
+      "title": "People using a Home Care Package at 30 June",
+      "titleColor": "#183B4E",
+      "titleFontSize": 13,
+      "titleLimit": 400,
+      "fill": "color"
+    }
+  ],
+  "config": {
+    "axis": {"labelFont": "Inter, sans-serif"},
+    "style": {
+      "guide-label": {"font": "Inter, sans-serif"},
+      "guide-title": {"font": "Inter, sans-serif"},
+      "group-title": {"font": "Inter, sans-serif"},
+      "group-subtitle": {"font": "Inter, sans-serif"},
+      "cell": {"stroke": null},
+      "text": {"font": "Inter, sans-serif"}
+    }
+  }
+}

@@ -1,0 +1,289 @@
+{
+  "$schema": "https://vega.github.io/schema/vega/v6.json",
+  "description": "Proportional-symbol map of permanent residential care recipients by Australian state and territory. Circle area is proportional to the number of recipients.",
+  "autosize": {"type": "fit-x", "contains": "padding"},
+  "background": "#FFFFFF",
+  "padding": 5,
+  "width": 800,
+  "height": 520,
+  "title": {
+    "text": "Where Is Residential Care Used Most?",
+    "subtitle": [
+      "Number of people in permanent residential aged care by state and territory."
+    ],
+    "anchor": "start",
+    "font": "Manrope, sans-serif",
+    "fontSize": 28,
+    "fontWeight": 800,
+    "color": "#183B4E",
+    "subtitleFont": "Inter, sans-serif",
+    "subtitleFontSize": 15,
+    "subtitleColor": "#64757A",
+    "subtitlePadding": 8,
+    "offset": 20
+  },
+  "style": "view",
+  "data": [
+    {
+      "name": "source_0",
+      "url": "https://raw.githubusercontent.com/rowanhogan/australian-states/refs/heads/master/states.geojson",
+      "format": {"type": "json", "property": "features"}
+    },
+    {
+      "name": "source_2",
+      "values": [
+        {
+          "State": "New South Wales",
+          "lon": 146.5,
+          "lat": -32,
+          "abbr": "NSW",
+          "labLon": 146.5,
+          "labLat": -32
+        },
+        {
+          "State": "Victoria",
+          "lon": 144.5,
+          "lat": -37,
+          "abbr": "VIC",
+          "labLon": 144.5,
+          "labLat": -37
+        },
+        {
+          "State": "Queensland",
+          "lon": 144.5,
+          "lat": -22.5,
+          "abbr": "QLD",
+          "labLon": 144.5,
+          "labLat": -22.5
+        },
+        {
+          "State": "South Australia",
+          "lon": 135.5,
+          "lat": -30,
+          "abbr": "SA",
+          "labLon": 135.5,
+          "labLat": -30
+        },
+        {
+          "State": "Western Australia",
+          "lon": 122,
+          "lat": -26,
+          "abbr": "WA",
+          "labLon": 122,
+          "labLat": -26
+        },
+        {
+          "State": "Tasmania",
+          "lon": 146.6,
+          "lat": -42.1,
+          "abbr": "TAS",
+          "labLon": 149.6,
+          "labLat": -42.1
+        },
+        {
+          "State": "Northern Territory",
+          "lon": 133,
+          "lat": -19.4,
+          "abbr": "NT",
+          "labLon": 133,
+          "labLat": -19.4
+        },
+        {
+          "State": "Australian Capital Territory",
+          "lon": 149.1,
+          "lat": -35.5,
+          "abbr": "ACT",
+          "labLon": 151.6,
+          "labLat": -35.5
+        }
+      ]
+    },
+    {
+      "name": "source_1",
+      "url": "https://raw.githubusercontent.com/zoyeana/aged-care-australia/refs/heads/main/data/australia_residential_care_by_state_2025.csv",
+      "format": {
+        "type": "csv",
+        "parse": {"Year": "number", "PermanentResidentialRecipients": "number"},
+        "delimiter": ","
+      },
+      "transform": [
+        {
+          "type": "lookup",
+          "from": "source_2",
+          "key": "State",
+          "fields": ["State"],
+          "values": ["lon", "lat", "abbr", "labLon", "labLat"]
+        },
+        {
+          "type": "formula",
+          "expr": "toNumber(datum.PermanentResidentialRecipients)",
+          "as": "recipients"
+        },
+        {
+          "type": "geojson",
+          "fields": ["lon", "lat"],
+          "signal": "layer_1_geojson_0"
+        },
+        {
+          "type": "geopoint",
+          "projection": "projection",
+          "fields": ["lon", "lat"],
+          "as": ["layer_1_x", "layer_1_y"]
+        },
+        {
+          "type": "filter",
+          "expr": "isValid(datum[\"recipients\"]) && isFinite(+datum[\"recipients\"])"
+        }
+      ]
+    },
+    {
+      "name": "source_3",
+      "url": "YOUR_RAW_LINK_TO_australia_residential_care_by_state_2025.csv",
+      "format": {"type": "csv"},
+      "transform": [
+        {
+          "type": "lookup",
+          "from": "source_2",
+          "key": "State",
+          "fields": ["State"],
+          "values": ["lon", "lat", "abbr", "labLon", "labLat"]
+        },
+        {
+          "type": "geojson",
+          "fields": ["labLon", "labLat"],
+          "signal": "layer_2_geojson_0"
+        },
+        {
+          "type": "geopoint",
+          "projection": "projection",
+          "fields": ["labLon", "labLat"],
+          "as": ["layer_2_x", "layer_2_y"]
+        }
+      ]
+    }
+  ],
+  "projections": [
+    {
+      "name": "projection",
+      "size": {"signal": "[width, height]"},
+      "fit": {
+        "signal": "[data('source_0'), layer_1_geojson_0, layer_2_geojson_0]"
+      },
+      "type": "mercator"
+    }
+  ],
+  "marks": [
+    {
+      "name": "layer_0_marks",
+      "type": "shape",
+      "style": ["geoshape"],
+      "from": {"data": "source_0"},
+      "encode": {
+        "update": {
+          "fill": {"value": "#F8F7F3"},
+          "stroke": {"value": "#E9E5DB"},
+          "strokeWidth": {"value": 1},
+          "ariaRoleDescription": {"value": "geoshape"}
+        }
+      },
+      "transform": [{"type": "geoshape", "projection": "projection"}]
+    },
+    {
+      "name": "layer_1_marks",
+      "type": "symbol",
+      "style": ["circle"],
+      "sort": {"field": ["datum[\"recipients\"]"], "order": ["descending"]},
+      "from": {"data": "source_1"},
+      "encode": {
+        "update": {
+          "opacity": {"value": 0.75},
+          "stroke": {"value": "#FFFFFF"},
+          "strokeWidth": {"value": 1},
+          "fill": {"value": "#C76F63"},
+          "tooltip": {
+            "signal": "{\"State\": isValid(datum[\"State\"]) ? isArray(datum[\"State\"]) ? join(datum[\"State\"], '\\n') : datum[\"State\"] : \"\"+datum[\"State\"], \"People in permanent residential care\": format(datum[\"recipients\"], \",.0f\")}"
+          },
+          "ariaRoleDescription": {"value": "circle"},
+          "description": {
+            "signal": "\"lon: \" + (format(datum[\"lon\"], \"\")) + \"; lat: \" + (format(datum[\"lat\"], \"\")) + \"; recipients: \" + (format(datum[\"recipients\"], \",.0f\")) + \"; State: \" + (isValid(datum[\"State\"]) ? isArray(datum[\"State\"]) ? join(datum[\"State\"], ' ') : datum[\"State\"] : \"\"+datum[\"State\"]) + \"; People in permanent residential care: \" + (format(datum[\"recipients\"], \",.0f\"))"
+          },
+          "x": {"field": "layer_1_x"},
+          "y": {"field": "layer_1_y"},
+          "size": {"scale": "size", "field": "recipients"},
+          "shape": {"value": "circle"}
+        }
+      }
+    },
+    {
+      "name": "layer_2_marks",
+      "type": "text",
+      "style": ["text"],
+      "from": {"data": "source_3"},
+      "encode": {
+        "update": {
+          "fontSize": {"value": 11},
+          "fontWeight": {"value": 700},
+          "fill": {"value": "#183B4E"},
+          "description": {
+            "signal": "\"labLon: \" + (format(datum[\"labLon\"], \"\")) + \"; labLat: \" + (format(datum[\"labLat\"], \"\")) + \"; abbr: \" + (isValid(datum[\"abbr\"]) ? isArray(datum[\"abbr\"]) ? join(datum[\"abbr\"], ' ') : datum[\"abbr\"] : \"\"+datum[\"abbr\"])"
+          },
+          "x": {"field": "layer_2_x"},
+          "y": {"field": "layer_2_y"},
+          "text": {
+            "signal": "isValid(datum[\"abbr\"]) ? datum[\"abbr\"] : \"\"+datum[\"abbr\"]"
+          },
+          "align": {"value": "center"},
+          "baseline": {"value": "middle"}
+        }
+      }
+    }
+  ],
+  "scales": [
+    {
+      "name": "size",
+      "type": "linear",
+      "domain": [0, 60000],
+      "range": [0, 3600],
+      "zero": true
+    }
+  ],
+  "legends": [
+    {
+      "format": ",.0f",
+      "labelColor": "#64757A",
+      "labelFontSize": 12,
+      "offset": 0,
+      "orient": "bottom-left",
+      "padding": 6,
+      "rowPadding": 8,
+      "symbolFillColor": "#C76F63",
+      "symbolOpacity": 0.75,
+      "symbolStrokeColor": "#FFFFFF",
+      "title": "People in permanent residential care",
+      "titleColor": "#64757A",
+      "titleFontSize": 13,
+      "titleLimit": 300,
+      "values": [5000, 20000, 50000],
+      "size": "size",
+      "symbolType": "circle",
+      "encode": {
+        "symbols": {
+          "update": {
+            "fill": {"value": "#C76F63"},
+            "stroke": {"value": "transparent"}
+          }
+        }
+      }
+    }
+  ],
+  "config": {
+    "style": {
+      "guide-label": {"font": "Inter, sans-serif"},
+      "guide-title": {"font": "Inter, sans-serif"},
+      "group-title": {"font": "Inter, sans-serif"},
+      "group-subtitle": {"font": "Inter, sans-serif"},
+      "cell": {"stroke": null},
+      "text": {"font": "Inter, sans-serif"}
+    }
+  }
+}

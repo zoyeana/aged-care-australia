@@ -1,0 +1,317 @@
+{
+  "$schema": "https://vega.github.io/schema/vega/v6.json",
+  "description": "Mirrored population pyramid of Australia by age group and sex, with a year slider from 1990 to 2025.",
+  "autosize": {"type": "fit-x", "contains": "padding"},
+  "background": "#FFFFFF",
+  "padding": 5,
+  "width": 800,
+  "height": 500,
+  "title": {
+    "text": "Australia's Changing Population Pyramid",
+    "subtitle": "People in each age group by sex. Drag the slider to compare years from 1990 to 2025.",
+    "anchor": "start",
+    "font": "Manrope, sans-serif",
+    "fontSize": 28,
+    "fontWeight": 800,
+    "color": "#183B4E",
+    "subtitleFont": "Inter, sans-serif",
+    "subtitleFontSize": 15,
+    "subtitleColor": "#64757A",
+    "subtitlePadding": 8,
+    "offset": 20
+  },
+  "style": "cell",
+  "data": [
+    {"name": "source_1", "values": [{"x": 0}]},
+    {"name": "source_2", "values": [{"x": -1200000, "label": "◀ Male"}]},
+    {"name": "source_3", "values": [{"x": 1200000, "label": "Female ▶"}]},
+    {
+      "name": "source_0",
+      "url": "https://raw.githubusercontent.com/zoyeana/aged-care-australia/refs/heads/main/data/australia_population_pyramid_1990_2025.csv",
+      "format": {
+        "type": "csv",
+        "parse": {
+          "Year": "number",
+          "Population": "number",
+          "PercentageOfTotal": "number",
+          "SignedPopulation": "number"
+        },
+        "delimiter": ","
+      },
+      "transform": [
+        {"type": "filter", "expr": "datum.Year == selectedYear"},
+        {
+          "type": "formula",
+          "expr": "parseInt(datum.AgeGroup)",
+          "as": "ageStart"
+        },
+        {
+          "type": "formula",
+          "expr": "datum.SignedPopulation < 0 ? 'Male' : 'Female'",
+          "as": "side"
+        },
+        {
+          "type": "formula",
+          "expr": "format(datum.PercentageOfTotal, '.2f') + '%'",
+          "as": "shareText"
+        },
+        {
+          "type": "formula",
+          "expr": "indexof([\"Male\",\"Female\"], datum['side'])",
+          "as": "_side_sort_index"
+        }
+      ]
+    },
+    {
+      "name": "data_0",
+      "source": "source_0",
+      "transform": [
+        {
+          "type": "stack",
+          "groupby": ["AgeGroup"],
+          "field": "SignedPopulation",
+          "sort": {"field": ["_side_sort_index"], "order": ["ascending"]},
+          "as": ["SignedPopulation_start", "SignedPopulation_end"],
+          "offset": "zero"
+        },
+        {
+          "type": "filter",
+          "expr": "isValid(datum[\"SignedPopulation\"]) && isFinite(+datum[\"SignedPopulation\"])"
+        }
+      ]
+    },
+    {
+      "name": "data_1",
+      "source": "source_1",
+      "transform": [
+        {
+          "type": "filter",
+          "expr": "isValid(datum[\"x\"]) && isFinite(+datum[\"x\"])"
+        }
+      ]
+    },
+    {
+      "name": "data_2",
+      "source": "source_2",
+      "transform": [
+        {
+          "type": "filter",
+          "expr": "isValid(datum[\"x\"]) && isFinite(+datum[\"x\"])"
+        }
+      ]
+    },
+    {
+      "name": "data_3",
+      "source": "source_3",
+      "transform": [
+        {
+          "type": "filter",
+          "expr": "isValid(datum[\"x\"]) && isFinite(+datum[\"x\"])"
+        }
+      ]
+    }
+  ],
+  "signals": [
+    {
+      "name": "selectedYear",
+      "value": 2025,
+      "bind": {
+        "input": "range",
+        "min": 1990,
+        "max": 2025,
+        "step": 1,
+        "name": "Year: "
+      }
+    }
+  ],
+  "marks": [
+    {
+      "name": "layer_0_marks",
+      "type": "rect",
+      "style": ["bar"],
+      "from": {"data": "data_0"},
+      "encode": {
+        "update": {
+          "stroke": {"value": "#FFFFFF"},
+          "strokeWidth": {"value": 0.5},
+          "fill": {"scale": "color", "field": "side"},
+          "tooltip": {
+            "signal": "{\"Year\": isValid(datum[\"Year\"]) ? isArray(datum[\"Year\"]) ? join(datum[\"Year\"], '\\n') : datum[\"Year\"] : \"\"+datum[\"Year\"], \"Age group\": isValid(datum[\"AgeGroup\"]) ? isArray(datum[\"AgeGroup\"]) ? join(datum[\"AgeGroup\"], '\\n') : datum[\"AgeGroup\"] : \"\"+datum[\"AgeGroup\"], \"Sex\": isValid(datum[\"Sex\"]) ? isArray(datum[\"Sex\"]) ? join(datum[\"Sex\"], '\\n') : datum[\"Sex\"] : \"\"+datum[\"Sex\"], \"Population\": format(datum[\"Population\"], \",.0f\"), \"Share of total population\": isValid(datum[\"shareText\"]) ? isArray(datum[\"shareText\"]) ? join(datum[\"shareText\"], '\\n') : datum[\"shareText\"] : \"\"+datum[\"shareText\"]}"
+          },
+          "ariaRoleDescription": {"value": "bar"},
+          "description": {
+            "signal": "\"Number of people: \" + (format(datum[\"SignedPopulation\"], \"\")) + \"; Age group: \" + (isValid(datum[\"AgeGroup\"]) ? isArray(datum[\"AgeGroup\"]) ? join(datum[\"AgeGroup\"], ' ') : datum[\"AgeGroup\"] : \"\"+datum[\"AgeGroup\"]) + \"; side: \" + (isValid(datum[\"side\"]) ? isArray(datum[\"side\"]) ? join(datum[\"side\"], ' ') : datum[\"side\"] : \"\"+datum[\"side\"]) + \"; Year: \" + (isValid(datum[\"Year\"]) ? isArray(datum[\"Year\"]) ? join(datum[\"Year\"], ' ') : datum[\"Year\"] : \"\"+datum[\"Year\"]) + \"; Sex: \" + (isValid(datum[\"Sex\"]) ? isArray(datum[\"Sex\"]) ? join(datum[\"Sex\"], ' ') : datum[\"Sex\"] : \"\"+datum[\"Sex\"]) + \"; Population: \" + (format(datum[\"Population\"], \",.0f\")) + \"; Share of total population: \" + (isValid(datum[\"shareText\"]) ? isArray(datum[\"shareText\"]) ? join(datum[\"shareText\"], ' ') : datum[\"shareText\"] : \"\"+datum[\"shareText\"])"
+          },
+          "x": {"scale": "x", "field": "SignedPopulation_end"},
+          "x2": {"scale": "x", "field": "SignedPopulation_start"},
+          "y": {"scale": "y", "field": "AgeGroup"},
+          "height": {"signal": "max(0.25, bandwidth('y'))"}
+        }
+      }
+    },
+    {
+      "name": "layer_1_marks",
+      "type": "rule",
+      "style": ["rule"],
+      "from": {"data": "data_1"},
+      "encode": {
+        "update": {
+          "strokeWidth": {"value": 1.2},
+          "stroke": {"value": "#183B4E"},
+          "description": {"signal": "\"x: \" + (format(datum[\"x\"], \"\"))"},
+          "x": {"scale": "x", "field": "x"},
+          "y": {"value": 0},
+          "y2": {"field": {"group": "height"}}
+        }
+      }
+    },
+    {
+      "name": "layer_2_marks",
+      "type": "text",
+      "style": ["text"],
+      "from": {"data": "data_2"},
+      "encode": {
+        "update": {
+          "align": {"value": "left"},
+          "baseline": {"value": "top"},
+          "dx": {"value": 6},
+          "dy": {"value": 4},
+          "fontSize": {"value": 15},
+          "fontWeight": {"value": 700},
+          "fill": {"value": "#2E817C"},
+          "description": {
+            "signal": "\"x: \" + (format(datum[\"x\"], \"\")) + \"; label: \" + (isValid(datum[\"label\"]) ? isArray(datum[\"label\"]) ? join(datum[\"label\"], ' ') : datum[\"label\"] : \"\"+datum[\"label\"])"
+          },
+          "x": {"scale": "x", "field": "x"},
+          "y": {"value": 0},
+          "text": {
+            "signal": "isValid(datum[\"label\"]) ? datum[\"label\"] : \"\"+datum[\"label\"]"
+          }
+        }
+      }
+    },
+    {
+      "name": "layer_3_marks",
+      "type": "text",
+      "style": ["text"],
+      "from": {"data": "data_3"},
+      "encode": {
+        "update": {
+          "align": {"value": "right"},
+          "baseline": {"value": "top"},
+          "dx": {"value": -6},
+          "dy": {"value": 4},
+          "fontSize": {"value": 15},
+          "fontWeight": {"value": 700},
+          "fill": {"value": "#C76F63"},
+          "description": {
+            "signal": "\"x: \" + (format(datum[\"x\"], \"\")) + \"; label: \" + (isValid(datum[\"label\"]) ? isArray(datum[\"label\"]) ? join(datum[\"label\"], ' ') : datum[\"label\"] : \"\"+datum[\"label\"])"
+          },
+          "x": {"scale": "x", "field": "x"},
+          "y": {"value": 0},
+          "text": {
+            "signal": "isValid(datum[\"label\"]) ? datum[\"label\"] : \"\"+datum[\"label\"]"
+          }
+        }
+      }
+    }
+  ],
+  "scales": [
+    {
+      "name": "x",
+      "type": "linear",
+      "domain": [-1200000, 1200000],
+      "range": [0, {"signal": "width"}],
+      "nice": false,
+      "zero": true
+    },
+    {
+      "name": "y",
+      "type": "band",
+      "domain": {
+        "data": "source_0",
+        "field": "AgeGroup",
+        "sort": {"op": "min", "field": "ageStart", "order": "descending"}
+      },
+      "range": [0, {"signal": "height"}],
+      "paddingInner": 0.12,
+      "paddingOuter": 0.06
+    },
+    {
+      "name": "color",
+      "type": "ordinal",
+      "domain": ["Male", "Female"],
+      "range": ["#2E817C", "#C76F63"]
+    }
+  ],
+  "axes": [
+    {
+      "scale": "x",
+      "orient": "bottom",
+      "grid": true,
+      "values": [-1200000, -800000, -400000, 0, 400000, 800000, 1200000],
+      "gridScale": "y",
+      "tickCount": {"signal": "ceil(width/40)"},
+      "domain": false,
+      "labels": false,
+      "aria": false,
+      "maxExtent": 0,
+      "minExtent": 0,
+      "ticks": false,
+      "zindex": 0
+    },
+    {
+      "scale": "x",
+      "orient": "bottom",
+      "grid": false,
+      "title": "Number of people",
+      "values": [-1200000, -800000, -400000, 0, 400000, 800000, 1200000],
+      "labelFlush": true,
+      "labelOverlap": true,
+      "tickCount": {"signal": "ceil(width/40)"},
+      "encode": {
+        "labels": {
+          "update": {
+            "text": {
+              "signal": "datum.value == 0 ? '0' : format(abs(datum.value) / 1000000, '.1f') + 'M'"
+            }
+          }
+        }
+      },
+      "zindex": 0
+    },
+    {
+      "scale": "y",
+      "orient": "left",
+      "grid": false,
+      "title": "Age group",
+      "domain": false,
+      "labelPadding": 8,
+      "ticks": false,
+      "zindex": 0
+    }
+  ],
+  "config": {
+    "axis": {
+      "labelFont": "Inter, sans-serif",
+      "titleFont": "Inter, sans-serif",
+      "labelColor": "#183B4E",
+      "titleColor": "#64757A",
+      "labelFontSize": 12,
+      "titleFontSize": 13,
+      "titleFontWeight": 500,
+      "titlePadding": 12,
+      "gridColor": "#E9E5DB",
+      "domainColor": "#E9E5DB",
+      "tickColor": "#E9E5DB"
+    },
+    "style": {
+      "guide-label": {"font": "Inter, sans-serif"},
+      "guide-title": {"font": "Inter, sans-serif"},
+      "group-title": {"font": "Inter, sans-serif"},
+      "group-subtitle": {"font": "Inter, sans-serif"},
+      "cell": {"stroke": null},
+      "text": {"font": "Inter, sans-serif"}
+    }
+  }
+}

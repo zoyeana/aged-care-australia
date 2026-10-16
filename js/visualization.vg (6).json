@@ -1,0 +1,279 @@
+{
+  "$schema": "https://vega.github.io/schema/vega/v6.json",
+  "description": "Waffle chart of Australian Government aged care expenditure by service category, 2024-25. 100 squares are allocated to categories with the largest remainder method, computed inside this specification from the expenditure CSV.",
+  "background": "#FFFFFF",
+  "padding": 5,
+  "width": 700,
+  "height": 318,
+  "title": {
+    "text": "Where Does Australia's Aged Care Funding Go?",
+    "subtitle": [
+      "Each square is 1% of government aged care expenditure, 2024–25."
+    ],
+    "anchor": "start",
+    "font": "Manrope, sans-serif",
+    "fontSize": 28,
+    "fontWeight": 800,
+    "color": "#183B4E",
+    "subtitleFont": "Inter, sans-serif",
+    "subtitleFontSize": 15,
+    "subtitleColor": "#64757A",
+    "subtitlePadding": 8,
+    "offset": 20
+  },
+  "style": "cell",
+  "data": [
+    {
+      "name": "source_0",
+      "url": "https://raw.githubusercontent.com/zoyeana/aged-care-australia/refs/heads/main/data/australia_aged_care_government_expenditure_2024_25.csv",
+      "format": {
+        "type": "csv",
+        "parse": {"ExpenditureBillionAUD": "number", "SharePercent": "number"},
+        "delimiter": ","
+      },
+      "transform": [
+        {
+          "type": "joinaggregate",
+          "as": ["total"],
+          "ops": ["sum"],
+          "fields": ["ExpenditureBillionAUD"]
+        },
+        {
+          "type": "formula",
+          "expr": "100 * datum.ExpenditureBillionAUD / datum.total",
+          "as": "rawSquares"
+        },
+        {
+          "type": "formula",
+          "expr": "floor(datum.rawSquares)",
+          "as": "baseSquares"
+        },
+        {
+          "type": "formula",
+          "expr": "datum.rawSquares - datum.baseSquares",
+          "as": "remainder"
+        },
+        {
+          "type": "joinaggregate",
+          "as": ["baseTotal"],
+          "ops": ["sum"],
+          "fields": ["baseSquares"]
+        },
+        {
+          "type": "window",
+          "params": [null],
+          "as": ["remainderRank"],
+          "ops": ["row_number"],
+          "fields": [null],
+          "sort": {"field": ["remainder"], "order": ["descending"]}
+        },
+        {
+          "type": "formula",
+          "expr": "datum.baseSquares + (datum.remainderRank <= 100 - datum.baseTotal ? 1 : 0)",
+          "as": "squares"
+        },
+        {
+          "type": "window",
+          "params": [null],
+          "as": ["order"],
+          "ops": ["row_number"],
+          "fields": [null],
+          "sort": {"field": ["ExpenditureBillionAUD"], "order": ["descending"]}
+        },
+        {
+          "type": "window",
+          "params": [null],
+          "as": ["cumSquares"],
+          "ops": ["sum"],
+          "fields": ["squares"],
+          "sort": {"field": ["ExpenditureBillionAUD"], "order": ["descending"]},
+          "frame": [null, 0]
+        },
+        {
+          "type": "formula",
+          "expr": "datum.cumSquares - datum.squares",
+          "as": "startIndex"
+        },
+        {
+          "type": "formula",
+          "expr": "'$' + format(datum.ExpenditureBillionAUD, '.1f') + ' billion'",
+          "as": "amountText"
+        },
+        {
+          "type": "formula",
+          "expr": "datum.SharePercent + '%'",
+          "as": "shareText"
+        }
+      ]
+    },
+    {
+      "name": "data_0",
+      "source": "source_0",
+      "transform": [
+        {"type": "formula", "expr": "sequence(datum.squares)", "as": "k"},
+        {"type": "flatten", "fields": ["k"], "as": ["k"]},
+        {"type": "formula", "expr": "datum.startIndex + datum.k", "as": "idx"},
+        {"type": "formula", "expr": "datum.idx % 10 + 0.06", "as": "sx0"},
+        {"type": "formula", "expr": "datum.idx % 10 + 0.94", "as": "sx1"},
+        {
+          "type": "formula",
+          "expr": "floor(datum.idx / 10) + 0.06",
+          "as": "sy0"
+        },
+        {
+          "type": "formula",
+          "expr": "floor(datum.idx / 10) + 0.94",
+          "as": "sy1"
+        },
+        {
+          "type": "filter",
+          "expr": "isValid(datum[\"sx0\"]) && isFinite(+datum[\"sx0\"]) && isValid(datum[\"sy0\"]) && isFinite(+datum[\"sy0\"])"
+        }
+      ]
+    },
+    {
+      "name": "data_1",
+      "source": "source_0",
+      "transform": [
+        {"type": "formula", "expr": "11.4", "as": "lx0"},
+        {"type": "formula", "expr": "12.2", "as": "lx1"},
+        {
+          "type": "formula",
+          "expr": "1.2 + 1.9 * (datum.order - 1)",
+          "as": "ly"
+        },
+        {"type": "formula", "expr": "datum.ly - 0.4", "as": "ly0"},
+        {"type": "formula", "expr": "datum.ly + 0.4", "as": "ly1"},
+        {
+          "type": "filter",
+          "expr": "isValid(datum[\"lx0\"]) && isFinite(+datum[\"lx0\"]) && isValid(datum[\"ly0\"]) && isFinite(+datum[\"ly0\"])"
+        }
+      ]
+    },
+    {
+      "name": "data_2",
+      "source": "source_0",
+      "transform": [
+        {
+          "type": "formula",
+          "expr": "1.2 + 1.9 * (datum.order - 1)",
+          "as": "ly"
+        },
+        {
+          "type": "formula",
+          "expr": "[datum.Category, datum.amountText + '  ·  ' + datum.shareText]",
+          "as": "legendLines"
+        },
+        {
+          "type": "filter",
+          "expr": "isValid(datum[\"ly\"]) && isFinite(+datum[\"ly\"])"
+        }
+      ]
+    }
+  ],
+  "marks": [
+    {
+      "name": "layer_0_marks",
+      "type": "rect",
+      "style": ["rect"],
+      "from": {"data": "data_0"},
+      "encode": {
+        "update": {
+          "cornerRadius": {"value": 1},
+          "fill": {"scale": "color", "field": "Category"},
+          "tooltip": {
+            "signal": "{\"Category\": isValid(datum[\"Category\"]) ? isArray(datum[\"Category\"]) ? join(datum[\"Category\"], '\\n') : datum[\"Category\"] : \"\"+datum[\"Category\"], \"Expenditure (AUD)\": isValid(datum[\"amountText\"]) ? isArray(datum[\"amountText\"]) ? join(datum[\"amountText\"], '\\n') : datum[\"amountText\"] : \"\"+datum[\"amountText\"], \"Share of total\": isValid(datum[\"shareText\"]) ? isArray(datum[\"shareText\"]) ? join(datum[\"shareText\"], '\\n') : datum[\"shareText\"] : \"\"+datum[\"shareText\"], \"Squares shown\": format(datum[\"squares\"], \"\")}"
+          },
+          "description": {
+            "signal": "\"sx0: \" + (format(datum[\"sx0\"], \"\")) + \"; sy0: \" + (format(datum[\"sy0\"], \"\")) + \"; sx1: \" + (format(datum[\"sx1\"], \"\")) + \"; sy1: \" + (format(datum[\"sy1\"], \"\")) + \"; Category: \" + (isValid(datum[\"Category\"]) ? isArray(datum[\"Category\"]) ? join(datum[\"Category\"], ' ') : datum[\"Category\"] : \"\"+datum[\"Category\"]) + \"; Expenditure (AUD): \" + (isValid(datum[\"amountText\"]) ? isArray(datum[\"amountText\"]) ? join(datum[\"amountText\"], ' ') : datum[\"amountText\"] : \"\"+datum[\"amountText\"]) + \"; Share of total: \" + (isValid(datum[\"shareText\"]) ? isArray(datum[\"shareText\"]) ? join(datum[\"shareText\"], ' ') : datum[\"shareText\"] : \"\"+datum[\"shareText\"]) + \"; Squares shown: \" + (format(datum[\"squares\"], \"\"))"
+          },
+          "x": {"scale": "x", "field": "sx0"},
+          "x2": {"scale": "x", "field": "sx1"},
+          "y": {"scale": "y", "field": "sy0"},
+          "y2": {"scale": "y", "field": "sy1"}
+        }
+      }
+    },
+    {
+      "name": "layer_1_marks",
+      "type": "rect",
+      "style": ["rect"],
+      "from": {"data": "data_1"},
+      "encode": {
+        "update": {
+          "cornerRadius": {"value": 1},
+          "fill": {"scale": "color", "field": "Category"},
+          "description": {
+            "signal": "\"lx0: \" + (format(datum[\"lx0\"], \"\")) + \"; ly0: \" + (format(datum[\"ly0\"], \"\")) + \"; lx1: \" + (format(datum[\"lx1\"], \"\")) + \"; ly1: \" + (format(datum[\"ly1\"], \"\")) + \"; Category: \" + (isValid(datum[\"Category\"]) ? isArray(datum[\"Category\"]) ? join(datum[\"Category\"], ' ') : datum[\"Category\"] : \"\"+datum[\"Category\"])"
+          },
+          "x": {"scale": "x", "field": "lx0"},
+          "x2": {"scale": "x", "field": "lx1"},
+          "y": {"scale": "y", "field": "ly0"},
+          "y2": {"scale": "y", "field": "ly1"}
+        }
+      }
+    },
+    {
+      "name": "layer_2_marks",
+      "type": "text",
+      "style": ["text"],
+      "from": {"data": "data_2"},
+      "encode": {
+        "update": {
+          "align": {"value": "left"},
+          "baseline": {"value": "middle"},
+          "dx": {"value": 4},
+          "fontSize": {"value": 14},
+          "lineHeight": {"value": 19},
+          "fill": {"value": "#183B4E"},
+          "description": {
+            "signal": "\"ly: \" + (format(datum[\"ly\"], \"\")) + \"; legendLines: \" + (isValid(datum[\"legendLines\"]) ? isArray(datum[\"legendLines\"]) ? join(datum[\"legendLines\"], ' ') : datum[\"legendLines\"] : \"\"+datum[\"legendLines\"])"
+          },
+          "x": {"scale": "x", "value": 12.5},
+          "y": {"scale": "y", "field": "ly"},
+          "text": {
+            "signal": "isValid(datum[\"legendLines\"]) ? datum[\"legendLines\"] : \"\"+datum[\"legendLines\"]"
+          }
+        }
+      }
+    }
+  ],
+  "scales": [
+    {
+      "name": "x",
+      "type": "linear",
+      "domain": [0, 22],
+      "range": [0, {"signal": "width"}],
+      "zero": true
+    },
+    {
+      "name": "y",
+      "type": "linear",
+      "domain": [0, 10],
+      "range": [{"signal": "height"}, 0],
+      "reverse": true,
+      "zero": true
+    },
+    {
+      "name": "color",
+      "type": "ordinal",
+      "domain": [
+        "Residential care services",
+        "Home care and support services",
+        "Flexible care services",
+        "Other aged care services"
+      ],
+      "range": ["#183B4E", "#2E817C", "#C76F63", "#9B91B5"]
+    }
+  ],
+  "config": {
+    "style": {
+      "guide-label": {"font": "Inter, sans-serif"},
+      "guide-title": {"font": "Inter, sans-serif"},
+      "group-title": {"font": "Inter, sans-serif"},
+      "group-subtitle": {"font": "Inter, sans-serif"},
+      "cell": {"stroke": null},
+      "text": {"font": "Inter, sans-serif"}
+    }
+  }
+}

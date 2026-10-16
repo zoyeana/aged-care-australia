@@ -1,0 +1,403 @@
+{
+  "$schema": "https://vega.github.io/schema/vega/v6.json",
+  "description": "Multi-series line chart of approximate numbers of people using home support, home care and permanent residential care in Australia, 2017 to 2025. Values are approximate, digitised from an AIHW chart.",
+  "autosize": {"type": "fit-x", "contains": "padding"},
+  "background": "#FFFFFF",
+  "padding": {"left": 8, "right": 190, "top": 8, "bottom": 8},
+  "width": 800,
+  "height": 440,
+  "title": {
+    "text": "How Has Aged Care Use Changed?",
+    "subtitle": ["Number of people using each type of care, 2017 to 2025."],
+    "anchor": "start",
+    "font": "Manrope, sans-serif",
+    "fontSize": 28,
+    "fontWeight": 800,
+    "color": "#183B4E",
+    "subtitleFont": "Inter, sans-serif",
+    "subtitleFontSize": 15,
+    "subtitleColor": "#64757A",
+    "subtitlePadding": 8,
+    "offset": 20
+  },
+  "style": "cell",
+  "data": [
+    {"name": "series_store"},
+    {
+      "name": "source_0",
+      "url": "https://raw.githubusercontent.com/zoyeana/aged-care-australia/refs/heads/main/data/chart4_aihw_graph_approximate_2017_2025.csv",
+      "format": {
+        "type": "csv",
+        "parse": {"Year": "number", "ApproximatePeople": "number"},
+        "delimiter": ","
+      },
+      "transform": [
+        {
+          "type": "formula",
+          "expr": "'about ' + format(datum.ApproximatePeople, ',.0f')",
+          "as": "peopleText"
+        }
+      ]
+    },
+    {
+      "name": "data_0",
+      "source": "source_0",
+      "transform": [
+        {
+          "type": "filter",
+          "expr": "isValid(datum[\"Year\"]) && isFinite(+datum[\"Year\"]) && isValid(datum[\"ApproximatePeople\"]) && isFinite(+datum[\"ApproximatePeople\"])"
+        }
+      ]
+    },
+    {
+      "name": "data_1",
+      "source": "source_0",
+      "transform": [
+        {
+          "type": "joinaggregate",
+          "as": ["lastYear"],
+          "ops": ["max"],
+          "fields": ["Year"],
+          "groupby": ["CareType"]
+        },
+        {"type": "filter", "expr": "datum.Year === datum.lastYear"},
+        {
+          "type": "filter",
+          "expr": "isValid(datum[\"Year\"]) && isFinite(+datum[\"Year\"]) && isValid(datum[\"ApproximatePeople\"]) && isFinite(+datum[\"ApproximatePeople\"])"
+        }
+      ]
+    }
+  ],
+  "signals": [
+    {
+      "name": "unit",
+      "value": {},
+      "on": [
+        {"events": "pointermove", "update": "isTuple(group()) ? group() : unit"}
+      ]
+    },
+    {
+      "name": "series_CareType_legend",
+      "value": null,
+      "on": [
+        {
+          "events": [
+            {
+              "source": "view",
+              "type": "click",
+              "markname": "CareType_legend_symbols"
+            },
+            {
+              "source": "view",
+              "type": "click",
+              "markname": "CareType_legend_labels"
+            },
+            {
+              "source": "view",
+              "type": "click",
+              "markname": "CareType_legend_entries"
+            }
+          ],
+          "update": "isDefined(datum.value) ? datum.value : item().items[0].items[0].datum.value",
+          "force": true
+        },
+        {
+          "events": [{"source": "view", "type": "click"}],
+          "update": "!event.item || !datum ? null : series_CareType_legend",
+          "force": true
+        }
+      ]
+    },
+    {
+      "name": "series",
+      "update": "vlSelectionResolve(\"series_store\", \"union\", true, true)"
+    },
+    {
+      "name": "series_tuple",
+      "update": "series_CareType_legend !== null ? {fields: series_tuple_fields, values: [series_CareType_legend]} : null"
+    },
+    {
+      "name": "series_tuple_fields",
+      "value": [{"type": "E", "field": "CareType"}]
+    },
+    {
+      "name": "series_toggle",
+      "value": false,
+      "on": [
+        {
+          "events": {"merge": [{"source": "view", "type": "click"}]},
+          "update": "event.shiftKey"
+        }
+      ]
+    },
+    {
+      "name": "series_modify",
+      "on": [
+        {
+          "events": {"signal": "series_tuple"},
+          "update": "modify(\"series_store\", series_toggle ? null : series_tuple, series_toggle ? null : true, series_toggle ? series_tuple : null)"
+        }
+      ]
+    }
+  ],
+  "marks": [
+    {
+      "name": "layer_0_pathgroup",
+      "type": "group",
+      "from": {
+        "facet": {
+          "name": "faceted_path_layer_0_main",
+          "data": "source_0",
+          "groupby": ["CareType"]
+        }
+      },
+      "encode": {
+        "update": {
+          "width": {"field": {"group": "width"}},
+          "height": {"field": {"group": "height"}}
+        }
+      },
+      "marks": [
+        {
+          "name": "layer_0_marks",
+          "type": "line",
+          "style": ["line"],
+          "sort": {"field": "x"},
+          "interactive": true,
+          "from": {"data": "faceted_path_layer_0_main"},
+          "encode": {
+            "update": {
+              "strokeWidth": {"value": 2.6},
+              "strokeJoin": {"value": "round"},
+              "interpolate": {"value": "linear"},
+              "stroke": {"scale": "color", "field": "CareType"},
+              "opacity": [
+                {
+                  "test": "!length(data(\"series_store\")) || vlSelectionTest(\"series_store\", datum)",
+                  "value": 1
+                },
+                {"value": 0.25}
+              ],
+              "description": {
+                "signal": "\"Year: \" + (format(datum[\"Year\"], \"d\")) + \"; Approximate number of people: \" + (format(datum[\"ApproximatePeople\"], \",.0f\")) + \"; CareType: \" + (isValid(datum[\"CareType\"]) ? isArray(datum[\"CareType\"]) ? join(datum[\"CareType\"], ' ') : datum[\"CareType\"] : \"\"+datum[\"CareType\"])"
+              },
+              "x": {"scale": "x", "field": "Year"},
+              "y": {"scale": "y", "field": "ApproximatePeople"},
+              "defined": {
+                "signal": "isValid(datum[\"Year\"]) && isFinite(+datum[\"Year\"]) && isValid(datum[\"ApproximatePeople\"]) && isFinite(+datum[\"ApproximatePeople\"])"
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "layer_1_marks",
+      "type": "symbol",
+      "style": ["point"],
+      "interactive": true,
+      "from": {"data": "data_0"},
+      "encode": {
+        "update": {
+          "opacity": [
+            {
+              "test": "!length(data(\"series_store\")) || vlSelectionTest(\"series_store\", datum)",
+              "value": 1
+            },
+            {"value": 0.25}
+          ],
+          "stroke": {"value": "#FFFFFF"},
+          "strokeWidth": {"value": 1},
+          "size": {"value": 42},
+          "fill": {"scale": "color", "field": "CareType"},
+          "tooltip": {
+            "signal": "{\"Year\": isValid(datum[\"Year\"]) ? isArray(datum[\"Year\"]) ? join(datum[\"Year\"], '\\n') : datum[\"Year\"] : \"\"+datum[\"Year\"], \"Care type\": isValid(datum[\"CareType\"]) ? isArray(datum[\"CareType\"]) ? join(datum[\"CareType\"], '\\n') : datum[\"CareType\"] : \"\"+datum[\"CareType\"], \"Approximate people\": isValid(datum[\"peopleText\"]) ? isArray(datum[\"peopleText\"]) ? join(datum[\"peopleText\"], '\\n') : datum[\"peopleText\"] : \"\"+datum[\"peopleText\"]}"
+          },
+          "ariaRoleDescription": {"value": "point"},
+          "description": {
+            "signal": "\"Year: \" + (format(datum[\"Year\"], \"d\")) + \"; Approximate number of people: \" + (format(datum[\"ApproximatePeople\"], \",.0f\")) + \"; CareType: \" + (isValid(datum[\"CareType\"]) ? isArray(datum[\"CareType\"]) ? join(datum[\"CareType\"], ' ') : datum[\"CareType\"] : \"\"+datum[\"CareType\"]) + \"; Care type: \" + (isValid(datum[\"CareType\"]) ? isArray(datum[\"CareType\"]) ? join(datum[\"CareType\"], ' ') : datum[\"CareType\"] : \"\"+datum[\"CareType\"]) + \"; Approximate people: \" + (isValid(datum[\"peopleText\"]) ? isArray(datum[\"peopleText\"]) ? join(datum[\"peopleText\"], ' ') : datum[\"peopleText\"] : \"\"+datum[\"peopleText\"])"
+          },
+          "x": {"scale": "x", "field": "Year"},
+          "y": {"scale": "y", "field": "ApproximatePeople"}
+        }
+      }
+    },
+    {
+      "name": "layer_2_marks",
+      "type": "text",
+      "style": ["text"],
+      "interactive": false,
+      "from": {"data": "data_1"},
+      "encode": {
+        "update": {
+          "align": {"value": "left"},
+          "dx": {"value": 10},
+          "fontSize": {"value": 13},
+          "fontWeight": {"value": 600},
+          "fill": {"scale": "color", "field": "CareType"},
+          "opacity": [
+            {
+              "test": "!length(data(\"series_store\")) || vlSelectionTest(\"series_store\", datum)",
+              "value": 1
+            },
+            {"value": 0.25}
+          ],
+          "description": {
+            "signal": "\"Year: \" + (format(datum[\"Year\"], \"d\")) + \"; Approximate number of people: \" + (format(datum[\"ApproximatePeople\"], \",.0f\")) + \"; CareType: \" + (isValid(datum[\"CareType\"]) ? isArray(datum[\"CareType\"]) ? join(datum[\"CareType\"], ' ') : datum[\"CareType\"] : \"\"+datum[\"CareType\"])"
+          },
+          "x": {"scale": "x", "field": "Year"},
+          "y": {"scale": "y", "field": "ApproximatePeople"},
+          "text": {
+            "signal": "isValid(datum[\"CareType\"]) ? datum[\"CareType\"] : \"\"+datum[\"CareType\"]"
+          },
+          "baseline": {"value": "middle"}
+        }
+      }
+    }
+  ],
+  "scales": [
+    {
+      "name": "x",
+      "type": "linear",
+      "domain": [2017, 2025],
+      "range": [0, {"signal": "width"}],
+      "nice": false,
+      "zero": false
+    },
+    {
+      "name": "y",
+      "type": "linear",
+      "domain": {
+        "fields": [
+          {"data": "source_0", "field": "ApproximatePeople"},
+          {"data": "data_0", "field": "ApproximatePeople"},
+          {"data": "data_1", "field": "ApproximatePeople"}
+        ]
+      },
+      "range": [{"signal": "height"}, 0],
+      "zero": true,
+      "nice": true
+    },
+    {
+      "name": "color",
+      "type": "ordinal",
+      "domain": ["Home support", "Home care", "Permanent residential care"],
+      "range": ["#65B96A", "#20B8C5", "#6541A5"]
+    }
+  ],
+  "axes": [
+    {
+      "scale": "y",
+      "orient": "left",
+      "grid": true,
+      "gridScale": "x",
+      "tickCount": {"signal": "ceil(height/40)"},
+      "domain": false,
+      "labels": false,
+      "aria": false,
+      "maxExtent": 0,
+      "minExtent": 0,
+      "ticks": false,
+      "zindex": 0
+    },
+    {
+      "scale": "x",
+      "orient": "bottom",
+      "grid": false,
+      "title": "Year",
+      "format": "d",
+      "values": [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025],
+      "labelFlush": true,
+      "labelOverlap": true,
+      "tickMinStep": 1,
+      "zindex": 0
+    },
+    {
+      "scale": "y",
+      "orient": "left",
+      "grid": false,
+      "title": "Approximate number of people",
+      "format": ",.0f",
+      "labelOverlap": true,
+      "tickCount": {"signal": "ceil(height/40)"},
+      "zindex": 0
+    }
+  ],
+  "legends": [
+    {
+      "columnPadding": 22,
+      "direction": "horizontal",
+      "labelColor": "#183B4E",
+      "labelFontSize": 13,
+      "labelLimit": 300,
+      "offset": 12,
+      "orient": "top",
+      "symbolSize": 400,
+      "symbolStrokeWidth": 3,
+      "symbolType": "stroke",
+      "stroke": "color",
+      "encode": {
+        "labels": {
+          "name": "CareType_legend_labels",
+          "interactive": true,
+          "update": {
+            "opacity": [
+              {
+                "test": "(!length(data(\"series_store\")) || (series[\"CareType\"] && indexof(series[\"CareType\"], datum.value) >= 0))",
+                "value": 1
+              },
+              {"value": 0.35}
+            ],
+            "cursor": {"value": "pointer"}
+          }
+        },
+        "symbols": {
+          "name": "CareType_legend_symbols",
+          "interactive": true,
+          "update": {
+            "opacity": [
+              {
+                "test": "(!length(data(\"series_store\")) || (series[\"CareType\"] && indexof(series[\"CareType\"], datum.value) >= 0))",
+                "value": 1
+              },
+              {"value": 0.35}
+            ],
+            "cursor": {"value": "pointer"}
+          }
+        },
+        "entries": {
+          "name": "CareType_legend_entries",
+          "interactive": true,
+          "update": {
+            "fill": {"value": "transparent"},
+            "cursor": {"value": "pointer"}
+          }
+        }
+      },
+      "fill": "color"
+    }
+  ],
+  "config": {
+    "axis": {
+      "labelFont": "Inter, sans-serif",
+      "titleFont": "Inter, sans-serif",
+      "labelColor": "#183B4E",
+      "titleColor": "#64757A",
+      "labelFontSize": 12,
+      "titleFontSize": 13,
+      "titleFontWeight": 500,
+      "titlePadding": 12,
+      "domain": false,
+      "gridColor": "#E9E5DB",
+      "tickColor": "#E9E5DB"
+    },
+    "style": {
+      "guide-label": {"font": "Inter, sans-serif"},
+      "guide-title": {"font": "Inter, sans-serif"},
+      "group-title": {"font": "Inter, sans-serif"},
+      "group-subtitle": {"font": "Inter, sans-serif"},
+      "cell": {"stroke": null},
+      "text": {"font": "Inter, sans-serif"}
+    }
+  }
+}
