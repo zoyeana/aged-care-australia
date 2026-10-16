@@ -37,3 +37,8 @@ body { background: #E9EEEC; }
   .banner { padding: 18px 16px; }
   .cell, .kpi { padding: 5px 0; }
 }
+
+@media (max-width: 767px) {
+  .banner { padding: 18px 16px; }
+  .cell, .kpi { padding: 5px 0; }
+}
