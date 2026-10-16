@@ -85,9 +85,9 @@
         </div>
         <div class="pure-u-1 pure-u-sm-1-2 pure-u-lg-1-4 figure-cell">
           <div class="figure-card">
-            <span class="figure-number">834,278</span>
-            <span class="figure-label">People who received Commonwealth Home Support (CHSP) services in 2024–25</span>
-            <span class="figure-source">AIHW GEN, People using aged care by region</span>
+            <span class="figure-number">60.8%</span>
+            <span class="figure-label">Share of government aged care spending that went to residential care in 2024–25 ($24.2 billion)</span>
+            <span class="figure-source">Australian Government aged care expenditure, 2024–25</span>
           </div>
         </div>
       </div>
@@ -102,7 +102,7 @@
         <div class="chapter-head">
           <span class="chapter-no">Chapter 1</span>
           <h2>A population getting older</h2>
-          <p>Demand for aged care starts with demographics. Three views of the same shift: over time, by age, and by state.</p>
+          <p>Demand for aged care starts with demographics. Four views of the same shift: over time, by age, by state, and as a share of each state's population.</p>
         </div>
 
         <article class="story">
@@ -137,6 +137,17 @@
             <div class="chart-foot"><p>Each panel highlights one state; grey lines are the others and the dashed line is Australia.</p><p>Source: ABS National, state and territory population, March 2026, Table 3.</p></div>
           </div>
         </article>
+
+        <article class="story">
+          <div class="story-text">
+            <h3>Which states have the largest share of older residents?</h3>
+            <p>The map shows the percentage of each state and territory's population aged 65 and over in 2025. Darker shades mean a larger share of older residents, which points to where demand for aged care is likely to be felt first.</p>
+          </div>
+          <div class="chart-card">
+            <div class="chart-scroll"><div class="vis" id="vis4" data-spec="js/chart2_state_choropleth.vg.json" role="img" aria-label="Map of the percentage of each Australian state and territory's population aged 65 and over, 2025"></div></div>
+            <div class="chart-foot"><p>Hover a state for its exact percentage.</p><p>Source: ABS population estimates.</p></div>
+          </div>
+        </article>
       </div>
     </section>
 
@@ -146,8 +157,19 @@
         <div class="chapter-head">
           <span class="chapter-no">Chapter 2</span>
           <h2>Care use is growing, and unevenly</h2>
-          <p>Home care has expanded fast. How much each state uses it, and how it compares with residential care, differs a lot.</p>
+          <p>How aged care use has changed since 2017, and how fast home care has grown in each state.</p>
         </div>
+
+        <article class="story">
+          <div class="story-text">
+            <h3>Aged care use has changed, and the mix is shifting</h3>
+            <p>The lines compare <span class="hl-teal">home support</span>, <span class="hl-coral">home care</span> and permanent residential care from 2017 to 2025. The values are approximate, read from an AIHW chart, so the shape of each trend matters more than any single number.</p>
+          </div>
+          <div class="chart-card">
+            <div class="chart-scroll"><div class="vis" id="vis5" data-spec="js/chart4_line_chart.vg.json" role="img" aria-label="Line chart of approximate numbers of people using home support, home care and permanent residential care in Australia, 2017 to 2025"></div></div>
+            <div class="chart-foot"><p>Values are approximate, digitised from an AIHW chart.</p><p>Source: AIHW.</p></div>
+          </div>
+        </article>
 
         <article class="story">
           <div class="story-text">
@@ -155,19 +177,8 @@
             <p>Between 2021 and 2025 recipients rose in every state and territory. <span class="hl-coral">Queensland</span> more than doubled (+103%), while the <span class="hl-teal">ACT</span> grew least (+16%).</p>
           </div>
           <div class="chart-card">
-            <div class="chart-scroll"><div class="vis" id="vis4" data-spec="js/chart_home_care_heatmap.vg.json" role="img" aria-label="Heatmap of Home Care Package recipients by state, 2021 to 2025"></div></div>
+            <div class="chart-scroll"><div class="vis" id="vis6" data-spec="js/chart_home_care_heatmap.vg.json" role="img" aria-label="Heatmap of Home Care Package recipients by state, 2021 to 2025"></div></div>
             <div class="chart-foot"><p>Darker cells mean more people. Counts are at 30 June each year.</p><p>Source: Table 1, 2024–25 Report on the Operation of the Aged Care Act 1997.</p></div>
-          </div>
-        </article>
-
-        <article class="story">
-          <div class="story-text">
-            <h3>Home care and residential care follow different patterns</h3>
-            <p>Per 1,000 residents aged 65+, <span class="hl-teal">South Australia</span> has the highest home care rate (68.0) and the <span class="hl-coral">ACT</span> the lowest (35.3). The Northern Territory has the lowest residential care rate (20.1). These are comparison indicators, not exact utilisation rates, because some recipients are under 65.</p>
-          </div>
-          <div class="chart-card">
-            <div class="chart-scroll"><div class="vis" id="vis5" data-spec="js/chart_state_rates_heatmap.vg.json" role="img" aria-label="Heatmap of care recipients per 1,000 residents aged 65 and over by state and care type, 2025"></div></div>
-            <div class="chart-foot"><p>Numbers in the cells are recipients per 1,000 residents aged 65+.</p><p>Source: AIHW Aged Care Data Snapshot 2025 and ABS population estimates.</p></div>
           </div>
         </article>
       </div>
@@ -179,24 +190,13 @@
         <div class="chapter-head">
           <span class="chapter-no">Chapter 3</span>
           <h2>Where care is used, and by whom</h2>
-          <p>Zooming in: which regions rely on home support, where residential care is concentrated, and which ages use each type of care.</p>
+          <p>Where residential care is concentrated, and which ages use each type of care.</p>
         </div>
 
         <article class="story">
           <div class="story-text">
-            <h3>Home support is concentrated in the big population centres</h3>
-            <p>Across 336 SA3 regions, darker areas have more people using Commonwealth Home Support. Grey regions have no reported value; they are not zero.</p>
-          </div>
-          <div class="chart-card">
-            <div class="chart-scroll"><div class="vis" id="vis6" data-spec="js/chart6_sa3_choropleth.vg.json" role="img" aria-label="Map of home support recipients by SA3 region, 2024 to 2025"></div></div>
-            <div class="chart-foot"><p>Hover a region for its name and recipient count.</p><p>Source: AIHW GEN, People using aged care by region, 2024–25.</p></div>
-          </div>
-        </article>
-
-        <article class="story">
-          <div class="story-text">
             <h3>Where residential care is used most</h3>
-            <p>Circle size shows the number of people in residential care in each state, so the largest states stand out. Compare this with the per-person rates in Chapter 2.</p>
+            <p>Circle size shows the number of people in residential care in each state, so the largest states stand out.</p>
           </div>
           <div class="chart-card">
             <div class="chart-scroll"><div class="vis" id="vis7" data-spec="js/chart5_symbol_map.vg.json" role="img" aria-label="Proportional symbol map of residential care by state"></div></div>
@@ -229,11 +229,11 @@
         <article class="story">
           <div class="story-text">
             <h3>Residential care still takes the biggest share of spending</h3>
-            <p>In 2024–25, <span class="hl-coral">residential care</span> took $24.2 billion (60.8%) of government aged care spending, while <span class="hl-teal">home care and support</span> took $12.9 billion (32.4%).</p>
+            <p>In 2024–25, <span class="hl-coral">residential care</span> took $24.2 billion (60.8%) of government aged care spending, while <span class="hl-teal">home care and support</span> took $12.9 billion (32.4%). Each square is about 1% of the total.</p>
           </div>
           <div class="chart-card">
-            <div class="chart-scroll"><div class="vis" id="vis9" data-spec="js/chart8_treemap.vg.json" role="img" aria-label="Treemap of Australian Government aged care expenditure by category, 2024 to 2025"></div></div>
-            <div class="chart-foot"><p>Rectangle area is proportional to spending.</p><p>Source: Australian Government aged care expenditure, 2024–25.</p></div>
+            <div class="chart-scroll"><div class="vis" id="vis9" data-spec="js/chart8_waffle.vg.json" role="img" aria-label="Waffle chart of Australian Government aged care expenditure by service category, 2024 to 2025"></div></div>
+            <div class="chart-foot"><p>100 squares are shared between categories using the largest remainder method.</p><p>Source: Australian Government aged care expenditure, 2024–25.</p></div>
           </div>
         </article>
       </div>
@@ -257,7 +257,7 @@
             <p>States differ in how old they are and how much care they use, so a national average hides local needs.</p>
           </div></div>
         </div>
-        <p class="caveat"><strong>A note on the data.</strong> Rates per 1,000 residents aged 65+ are comparison indicators, not exact age-specific utilisation rates. Population and care figures come from different organisations and years, so differences between states should be read as patterns, not precise gaps.</p>
+        <p class="caveat"><strong>A note on the data.</strong> The line chart of aged care use over time shows approximate values read from an AIHW chart, so read it for trends, not exact counts. The charts combine figures from different organisations and years, so differences between states should be read as patterns, not precise gaps.</p>
       </div>
     </section>
   </main>
@@ -273,12 +273,12 @@
             <li>Australian Institute of Health and Welfare (AIHW), <em>GEN: People using aged care</em> (CURF, 30 June 2025, and by region, 2024–25).</li>
             <li>AIHW, <em>Aged Care Data Snapshot 2025</em>.</li>
             <li>Australian Government, <em>2024–25 Report on the Operation of the Aged Care Act 1997</em>.</li>
+            <li>AIHW chart of people using aged care over time (values approximated by the author).</li>
           </ul>
         </div>
         <div class="pure-u-1 pure-u-md-1-2 footer-cell">
           <h2>About this project</h2>
-          <p><strong>Author:</strong> [Your name], student ID [Your ID]. Monash University, FIT3179 Data Visualisation 2, Semester 2, 2026.</p>
-          <p><strong>Acknowledgement of AI use:</strong> I used Claude (Anthropic) to help write Vega-Lite specifications and page layout code. I chose the topic, datasets and design, reviewed the outputs and checked the figures against the sources.</p>
+          <p><strong>Author:</strong> Nafisa Zoyeana, student ID: 34708901. Monash University, FIT3179 Data Visualisation 2, Semester 2, 2026.</p>
           <p>Built with <a href="https://vega.github.io/vega-lite/">Vega-Lite</a> and <a href="https://purecss.io/">Pure.css</a>.</p>
         </div>
       </div>
