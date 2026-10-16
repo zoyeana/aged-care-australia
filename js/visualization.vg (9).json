@@ -1,0 +1,488 @@
+{
+  "$schema": "https://vega.github.io/schema/vega/v6.json",
+  "description": "Parallel coordinates chart comparing Australian states and territories on median age, Home Care Package rate, residential care rate and home care growth. Each axis is rescaled from its own minimum to maximum.",
+  "background": "#FFFFFF",
+  "padding": {"left": 10, "right": 10, "top": 40, "bottom": 10},
+  "width": 1000,
+  "height": 380,
+  "title": {
+    "text": "What Does Each State's Ageing and Care Profile Look Like?",
+    "subtitle": [
+      "Australian Government 2024–25 Report on the Operation of the Aged Care Act 1997, Table 1 (home care growth)."
+    ],
+    "anchor": "start",
+    "font": "Manrope, sans-serif",
+    "fontSize": 26,
+    "fontWeight": 800,
+    "color": "#183B4E",
+    "subtitleFont": "Inter, sans-serif",
+    "subtitleFontSize": 13,
+    "subtitleColor": "#64757A",
+    "subtitlePadding": 8,
+    "offset": 20
+  },
+  "style": "cell",
+  "data": [
+    {"name": "pickState_store"},
+    {
+      "name": "source_0",
+      "url": "https://raw.githubusercontent.com/zoyeana/aged-care-australia/refs/heads/main/data/australia_state_profile_2025.csv",
+      "format": {"type": "csv", "parse": {"Value": "number"}, "delimiter": ","},
+      "transform": [
+        {
+          "type": "joinaggregate",
+          "as": ["vMin", "vMax"],
+          "ops": ["min", "max"],
+          "fields": ["Value", "Value"],
+          "groupby": ["Measure"]
+        },
+        {
+          "type": "formula",
+          "expr": "(datum.Value - datum.vMin) / (datum.vMax - datum.vMin)",
+          "as": "scaled"
+        },
+        {
+          "type": "formula",
+          "expr": "indexof(datum.Measure, 'growth') >= 0 ? format(datum.Value, '.1f') + '%' : format(datum.Value, '.1f')",
+          "as": "valueText"
+        },
+        {
+          "type": "formula",
+          "expr": "indexof(datum.Measure, 'growth') >= 0 ? format(datum.vMax, '.0f') + '%' : format(datum.vMax, '.1f')",
+          "as": "maxText"
+        },
+        {
+          "type": "formula",
+          "expr": "indexof(datum.Measure, 'growth') >= 0 ? format(datum.vMin, '.0f') + '%' : format(datum.vMin, '.1f')",
+          "as": "minText"
+        },
+        {
+          "type": "formula",
+          "expr": "replace(replace(datum.Measure, '|', ' '), '|', ' ')",
+          "as": "measureLabel"
+        }
+      ]
+    },
+    {
+      "name": "data_0",
+      "source": "source_0",
+      "transform": [
+        {
+          "type": "formula",
+          "expr": "datum[\"Measure\"]===\"Median age, 2025|(years)\" ? 0 : datum[\"Measure\"]===\"Home Care Packages|per 1,000 aged 65+|2025\" ? 1 : datum[\"Measure\"]===\"Permanent residential|care per 1,000|aged 65+, 2025\" ? 2 : datum[\"Measure\"]===\"Home Care Package|growth, 2021–2025|(%)\" ? 3 : 4",
+          "as": "x_Measure_sort_index"
+        }
+      ]
+    },
+    {
+      "name": "data_1",
+      "source": "data_0",
+      "transform": [
+        {
+          "type": "filter",
+          "expr": "isValid(datum[\"scaled\"]) && isFinite(+datum[\"scaled\"])"
+        }
+      ]
+    },
+    {
+      "name": "data_2",
+      "source": "source_0",
+      "transform": [
+        {"type": "filter", "expr": "datum.State === 'New South Wales'"},
+        {
+          "type": "formula",
+          "expr": "datum[\"Measure\"]===\"Median age, 2025|(years)\" ? 0 : datum[\"Measure\"]===\"Home Care Packages|per 1,000 aged 65+|2025\" ? 1 : datum[\"Measure\"]===\"Permanent residential|care per 1,000|aged 65+, 2025\" ? 2 : datum[\"Measure\"]===\"Home Care Package|growth, 2021–2025|(%)\" ? 3 : 4",
+          "as": "x_Measure_sort_index"
+        }
+      ]
+    }
+  ],
+  "signals": [
+    {
+      "name": "unit",
+      "value": {},
+      "on": [
+        {"events": "pointermove", "update": "isTuple(group()) ? group() : unit"}
+      ]
+    },
+    {
+      "name": "pickState_State_legend",
+      "value": null,
+      "on": [
+        {
+          "events": [
+            {
+              "source": "view",
+              "type": "click",
+              "markname": "State_legend_symbols"
+            },
+            {
+              "source": "view",
+              "type": "click",
+              "markname": "State_legend_labels"
+            },
+            {
+              "source": "view",
+              "type": "click",
+              "markname": "State_legend_entries"
+            }
+          ],
+          "update": "isDefined(datum.value) ? datum.value : item().items[0].items[0].datum.value",
+          "force": true
+        },
+        {
+          "events": [{"source": "view", "type": "click"}],
+          "update": "!event.item || !datum ? null : pickState_State_legend",
+          "force": true
+        }
+      ]
+    },
+    {
+      "name": "pickState",
+      "update": "vlSelectionResolve(\"pickState_store\", \"union\", true, true)"
+    },
+    {
+      "name": "pickState_tuple",
+      "on": [
+        {
+          "events": [
+            {
+              "source": "scope",
+              "type": "pointerover",
+              "filter": [
+                "event.item && indexof(event.item.mark.role, \"legend\") < 0"
+              ]
+            }
+          ],
+          "update": "datum && item().mark.marktype !== 'group' && indexof(item().mark.role, 'legend') < 0 ? {unit: \"layer_0\", fields: pickState_tuple_fields, values: [(item().isVoronoi ? datum.datum : datum)[\"State\"]]} : null",
+          "force": true
+        },
+        {
+          "events": [{"signal": "pickState_State_legend"}],
+          "update": "pickState_State_legend !== null ? {fields: pickState_tuple_fields, values: [pickState_State_legend]} : null"
+        },
+        {"events": [{"source": "view", "type": "pointerout"}], "update": "null"}
+      ]
+    },
+    {
+      "name": "pickState_tuple_fields",
+      "value": [{"type": "E", "field": "State"}]
+    },
+    {
+      "name": "pickState_toggle",
+      "value": false,
+      "on": [
+        {
+          "events": [
+            {
+              "source": "scope",
+              "type": "pointerover",
+              "filter": [
+                "event.item && indexof(event.item.mark.role, \"legend\") < 0"
+              ]
+            }
+          ],
+          "update": "event.shiftKey"
+        },
+        {
+          "events": {"merge": [{"source": "view", "type": "click"}]},
+          "update": "event.shiftKey"
+        },
+        {
+          "events": [{"source": "view", "type": "pointerout"}],
+          "update": "false"
+        }
+      ]
+    },
+    {
+      "name": "pickState_modify",
+      "on": [
+        {
+          "events": {"signal": "pickState_tuple"},
+          "update": "modify(\"pickState_store\", pickState_toggle ? null : pickState_tuple, pickState_toggle ? null : true, pickState_toggle ? pickState_tuple : null)"
+        }
+      ]
+    }
+  ],
+  "marks": [
+    {
+      "name": "layer_0_pathgroup",
+      "type": "group",
+      "from": {
+        "facet": {
+          "name": "faceted_path_layer_0_main",
+          "data": "data_0",
+          "groupby": ["State", "State"]
+        }
+      },
+      "encode": {
+        "update": {
+          "width": {"field": {"group": "width"}},
+          "height": {"field": {"group": "height"}}
+        }
+      },
+      "marks": [
+        {
+          "name": "layer_0_marks",
+          "type": "line",
+          "style": ["line"],
+          "sort": {"field": "x"},
+          "interactive": true,
+          "from": {"data": "faceted_path_layer_0_main"},
+          "encode": {
+            "update": {
+              "interpolate": {"value": "linear"},
+              "stroke": {"scale": "color", "field": "State"},
+              "opacity": [
+                {
+                  "test": "!length(data(\"pickState_store\")) || vlSelectionTest(\"pickState_store\", datum)",
+                  "value": 1
+                },
+                {"value": 0.25}
+              ],
+              "strokeWidth": [
+                {
+                  "test": "!length(data(\"pickState_store\")) || vlSelectionTest(\"pickState_store\", datum)",
+                  "value": 4
+                },
+                {"value": 2.2}
+              ],
+              "description": {
+                "signal": "\"Measure: \" + (isValid(datum[\"Measure\"]) ? isArray(datum[\"Measure\"]) ? join(datum[\"Measure\"], ' ') : datum[\"Measure\"] : \"\"+datum[\"Measure\"]) + \"; scaled: \" + (format(datum[\"scaled\"], \"\")) + \"; State: \" + (isValid(datum[\"State\"]) ? isArray(datum[\"State\"]) ? join(datum[\"State\"], ' ') : datum[\"State\"] : \"\"+datum[\"State\"])"
+              },
+              "x": {"scale": "x", "field": "Measure"},
+              "y": {"scale": "y", "field": "scaled"},
+              "defined": {
+                "signal": "isValid(datum[\"scaled\"]) && isFinite(+datum[\"scaled\"])"
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "layer_1_marks",
+      "type": "symbol",
+      "style": ["point"],
+      "interactive": true,
+      "from": {"data": "data_1"},
+      "encode": {
+        "update": {
+          "opacity": [
+            {
+              "test": "!length(data(\"pickState_store\")) || vlSelectionTest(\"pickState_store\", datum)",
+              "value": 1
+            },
+            {"value": 0.25}
+          ],
+          "size": {"value": 70},
+          "fill": {"scale": "color", "field": "State"},
+          "tooltip": {
+            "signal": "{\"State\": isValid(datum[\"State\"]) ? isArray(datum[\"State\"]) ? join(datum[\"State\"], '\\n') : datum[\"State\"] : \"\"+datum[\"State\"], \"Measure\": isValid(datum[\"measureLabel\"]) ? isArray(datum[\"measureLabel\"]) ? join(datum[\"measureLabel\"], '\\n') : datum[\"measureLabel\"] : \"\"+datum[\"measureLabel\"], \"Value\": isValid(datum[\"valueText\"]) ? isArray(datum[\"valueText\"]) ? join(datum[\"valueText\"], '\\n') : datum[\"valueText\"] : \"\"+datum[\"valueText\"]}"
+          },
+          "ariaRoleDescription": {"value": "point"},
+          "description": {
+            "signal": "\"Measure: \" + (isValid(datum[\"Measure\"]) ? isArray(datum[\"Measure\"]) ? join(datum[\"Measure\"], ' ') : datum[\"Measure\"] : \"\"+datum[\"Measure\"]) + \"; scaled: \" + (format(datum[\"scaled\"], \"\")) + \"; State: \" + (isValid(datum[\"State\"]) ? isArray(datum[\"State\"]) ? join(datum[\"State\"], ' ') : datum[\"State\"] : \"\"+datum[\"State\"]) + \"; Value: \" + (isValid(datum[\"valueText\"]) ? isArray(datum[\"valueText\"]) ? join(datum[\"valueText\"], ' ') : datum[\"valueText\"] : \"\"+datum[\"valueText\"])"
+          },
+          "x": {"scale": "x", "field": "Measure"},
+          "y": {"scale": "y", "field": "scaled"}
+        }
+      }
+    },
+    {
+      "name": "layer_2_marks",
+      "type": "text",
+      "style": ["text"],
+      "interactive": false,
+      "from": {"data": "data_2"},
+      "encode": {
+        "update": {
+          "align": {"value": "left"},
+          "dx": {"value": 12},
+          "dy": {"value": 12},
+          "font": {"value": "Inter, sans-serif"},
+          "fontSize": {"value": 11},
+          "fontWeight": {"value": 600},
+          "fill": {"value": "#64757A"},
+          "description": {
+            "signal": "\"Measure: \" + (isValid(datum[\"Measure\"]) ? isArray(datum[\"Measure\"]) ? join(datum[\"Measure\"], ' ') : datum[\"Measure\"] : \"\"+datum[\"Measure\"]) + \"; maxText: \" + (isValid(datum[\"maxText\"]) ? isArray(datum[\"maxText\"]) ? join(datum[\"maxText\"], ' ') : datum[\"maxText\"] : \"\"+datum[\"maxText\"])"
+          },
+          "x": {"scale": "x", "field": "Measure"},
+          "y": {"value": 0},
+          "text": {
+            "signal": "isValid(datum[\"maxText\"]) ? datum[\"maxText\"] : \"\"+datum[\"maxText\"]"
+          },
+          "baseline": {"value": "middle"}
+        }
+      }
+    },
+    {
+      "name": "layer_3_marks",
+      "type": "text",
+      "style": ["text"],
+      "interactive": false,
+      "from": {"data": "data_2"},
+      "encode": {
+        "update": {
+          "align": {"value": "left"},
+          "dx": {"value": 12},
+          "dy": {"value": -6},
+          "font": {"value": "Inter, sans-serif"},
+          "fontSize": {"value": 11},
+          "fontWeight": {"value": 600},
+          "fill": {"value": "#64757A"},
+          "description": {
+            "signal": "\"Measure: \" + (isValid(datum[\"Measure\"]) ? isArray(datum[\"Measure\"]) ? join(datum[\"Measure\"], ' ') : datum[\"Measure\"] : \"\"+datum[\"Measure\"]) + \"; minText: \" + (isValid(datum[\"minText\"]) ? isArray(datum[\"minText\"]) ? join(datum[\"minText\"], ' ') : datum[\"minText\"] : \"\"+datum[\"minText\"])"
+          },
+          "x": {"scale": "x", "field": "Measure"},
+          "y": {"value": 380},
+          "text": {
+            "signal": "isValid(datum[\"minText\"]) ? datum[\"minText\"] : \"\"+datum[\"minText\"]"
+          },
+          "baseline": {"value": "middle"}
+        }
+      }
+    }
+  ],
+  "scales": [
+    {
+      "name": "x",
+      "type": "point",
+      "domain": {
+        "fields": [
+          {"data": "data_0", "field": "Measure"},
+          {"data": "data_2", "field": "Measure"}
+        ],
+        "sort": {"op": "min", "field": "x_Measure_sort_index"}
+      },
+      "range": [0, {"signal": "width"}],
+      "padding": 40
+    },
+    {
+      "name": "y",
+      "type": "linear",
+      "domain": [0, 1],
+      "range": [{"signal": "height"}, 0],
+      "nice": true,
+      "zero": true
+    },
+    {
+      "name": "color",
+      "type": "ordinal",
+      "domain": [
+        "New South Wales",
+        "Victoria",
+        "Queensland",
+        "Western Australia",
+        "South Australia",
+        "Tasmania",
+        "Australian Capital Territory",
+        "Northern Territory"
+      ],
+      "range": [
+        "#183B4E",
+        "#2E817C",
+        "#C76F63",
+        "#9B91B5",
+        "#79B7AE",
+        "#E4A58D",
+        "#64757A",
+        "#B08D3C"
+      ]
+    }
+  ],
+  "axes": [
+    {
+      "scale": "x",
+      "orient": "top",
+      "grid": true,
+      "gridColor": "#183B4E",
+      "gridWidth": 1.5,
+      "gridScale": "y",
+      "domain": false,
+      "labels": false,
+      "aria": false,
+      "maxExtent": 0,
+      "minExtent": 0,
+      "ticks": false,
+      "zindex": 0
+    },
+    {
+      "scale": "x",
+      "orient": "top",
+      "grid": false,
+      "domain": false,
+      "labelAngle": 0,
+      "labelColor": "#183B4E",
+      "labelFontSize": 12,
+      "labelFontWeight": 600,
+      "labelPadding": 50,
+      "ticks": false,
+      "labelBaseline": "bottom",
+      "encode": {
+        "labels": {"update": {"text": {"signal": "split(datum.label, '|')"}}}
+      },
+      "zindex": 0
+    }
+  ],
+  "legends": [
+    {
+      "labelColor": "#183B4E",
+      "labelFontSize": 12,
+      "orient": "right",
+      "rowPadding": 6,
+      "symbolStrokeWidth": 4,
+      "symbolType": "stroke",
+      "stroke": "color",
+      "encode": {
+        "labels": {
+          "name": "State_legend_labels",
+          "interactive": true,
+          "update": {
+            "opacity": [
+              {
+                "test": "(!length(data(\"pickState_store\")) || (pickState[\"State\"] && indexof(pickState[\"State\"], datum.value) >= 0))",
+                "value": 1
+              },
+              {"value": 0.35}
+            ],
+            "cursor": {"value": "pointer"}
+          }
+        },
+        "symbols": {
+          "name": "State_legend_symbols",
+          "interactive": true,
+          "update": {
+            "opacity": [
+              {
+                "test": "(!length(data(\"pickState_store\")) || (pickState[\"State\"] && indexof(pickState[\"State\"], datum.value) >= 0))",
+                "value": 1
+              },
+              {"value": 0.35}
+            ],
+            "cursor": {"value": "pointer"}
+          }
+        },
+        "entries": {
+          "name": "State_legend_entries",
+          "interactive": true,
+          "update": {
+            "fill": {"value": "transparent"},
+            "cursor": {"value": "pointer"}
+          }
+        }
+      },
+      "fill": "color"
+    }
+  ],
+  "config": {
+    "style": {
+      "guide-label": {"font": "Inter, sans-serif"},
+      "guide-title": {"font": "Inter, sans-serif"},
+      "group-title": {"font": "Inter, sans-serif"},
+      "group-subtitle": {"font": "Inter, sans-serif"},
+      "cell": {"stroke": null},
+      "text": {"font": "Inter, sans-serif"}
+    }
+  }
+}
