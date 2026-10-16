@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Aged Care in Australia: Is Care Keeping Up with an Ageing Nation?</title>
+  <meta name="description" content="A data story on Australia's ageing population and how aged care use is changing, built with Vega-Lite.">
+
+  <!-- Google Fonts: Manrope (headings) and Inter (body) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@700;800&display=swap" rel="stylesheet">
+
+  <!-- Pure.css grid (as in the Week 5 lab) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/purecss@3.0.0/build/pure-min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/purecss@3.0.0/build/grids-responsive-min.css">
+
+  <!-- Our own styles -->
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+  <a class="skip-link" href="#main">Skip to the charts</a>
+
+  <header class="topbar">
+    <div class="wrap">
+      <a class="brand" href="#top">Aged Care in Australia</a>
+      <nav aria-label="Sections">
+        <a href="#ageing">Ageing</a>
+        <a href="#use">Care use</a>
+        <a href="#where">Where and who</a>
+        <a href="#money">Spending</a>
+        <a href="#sources">Sources</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ===== Hero ===== -->
+  <section class="hero" id="top">
+    <div class="wrap">
+      <div class="pure-g">
+        <div class="pure-u-1 pure-u-lg-2-3 hero-text">
+          <span class="eyebrow">FIT3179 Data Visualisation 2 · Assignment 2</span>
+          <h1>Is aged care keeping up with an ageing Australia?</h1>
+          <p class="standfirst">
+            Australians are living longer and the population is getting
+            <span class="hl-coral">older</span>. This story follows the shift
+            from who is ageing, to who uses
+            <span class="hl-teal">home care</span> and
+            <span class="hl-coral">residential care</span>, to where the money goes.
+          </p>
+        </div>
+        <div class="pure-u-1 pure-u-lg-1-3 hero-aside">
+          <p><strong>How to read this page.</strong> Every chart is interactive: hover for exact values, and use the legend, slider or dropdown where one appears.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Key figures ===== -->
+  <section class="figures" aria-label="Key figures">
+    <div class="wrap">
+      <div class="pure-g">
+        <div class="pure-u-1 pure-u-sm-1-2 pure-u-lg-1-4 figure-cell">
+          <div class="figure-card">
+            <span class="figure-number">11% → 17.5%</span>
+            <span class="figure-label">Share of Australians aged 65 and over, about 1990 to 2025</span>
+            <span class="figure-source">ABS population estimates</span>
+          </div>
+        </div>
+        <div class="pure-u-1 pure-u-sm-1-2 pure-u-lg-1-4 figure-cell">
+          <div class="figure-card">
+            <span class="figure-number">+66%</span>
+            <span class="figure-label">Growth in people using a Home Care Package, 2021 to 2025 (176,105 to 292,911)</span>
+            <span class="figure-source">2024–25 Report on the Operation of the Aged Care Act 1997</span>
+          </div>
+        </div>
+        <div class="pure-u-1 pure-u-sm-1-2 pure-u-lg-1-4 figure-cell">
+          <div class="figure-card">
+            <span class="figure-number">42.5 vs 33.8</span>
+            <span class="figure-label">Median age in 2025: Tasmania, the oldest, against the Northern Territory, the youngest</span>
+            <span class="figure-source">ABS, March 2026 release</span>
+          </div>
+        </div>
+        <div class="pure-u-1 pure-u-sm-1-2 pure-u-lg-1-4 figure-cell">
+          <div class="figure-card">
+            <span class="figure-number">834,278</span>
+            <span class="figure-label">People who received Commonwealth Home Support (CHSP) services in 2024–25</span>
+            <span class="figure-source">AIHW GEN, People using aged care by region</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <main id="main">
+
+    <!-- ===== Chapter 1 ===== -->
+    <section class="chapter" id="ageing">
+      <div class="wrap">
+        <div class="chapter-head">
+          <span class="chapter-no">Chapter 1</span>
+          <h2>A population getting older</h2>
+          <p>Demand for aged care starts with demographics. Three views of the same shift: over time, by age, and by state.</p>
+        </div>
+
+        <article class="story">
+          <div class="story-text">
+            <h3>Older age groups are taking a bigger share every decade</h3>
+            <p>Since 1990 the <span class="hl-coral">65 and over</span> groups have grown from about 11% to about 17.5% of the population, while the <span class="hl-teal">youngest</span> group has shrunk.</p>
+          </div>
+          <div class="chart-card">
+            <div class="chart-scroll"><div class="vis" id="vis1" data-spec="js/chart1_stacked_area.vg.json" role="img" aria-label="100% stacked area chart of Australia's population by age group, 1990 to 2025"></div></div>
+            <div class="chart-foot"><p>Hover over the chart to read each age group's share for any year.</p><p>Source: ABS estimated resident population.</p></div>
+          </div>
+        </article>
+
+        <article class="story">
+          <div class="story-text">
+            <h3>The shape of the population is changing</h3>
+            <p>The population pyramid shows the same story by age and sex: the top of the pyramid widens as large generations move into older age. Move the slider to compare years.</p>
+          </div>
+          <div class="chart-card">
+            <div class="chart-scroll"><div class="vis" id="vis2" data-spec="js/chart3_pyramid.vg.json" role="img" aria-label="Population pyramid of Australia by age and sex with a year slider"></div></div>
+            <div class="chart-foot"><p>Males extend left and females extend right.</p><p>Source: ABS estimated resident population.</p></div>
+          </div>
+        </article>
+
+        <article class="story">
+          <div class="story-text">
+            <h3>Ageing is not even across the country</h3>
+            <p>In 2025, <span class="hl-coral">Tasmania</span> has the oldest population (median age 42.5) and the <span class="hl-teal">Northern Territory</span> the youngest (33.8). Tasmania rose 3.6 years since 2006, while Victoria barely moved.</p>
+          </div>
+          <div class="chart-card">
+            <div class="chart-scroll"><div class="vis" id="vis3" data-spec="js/chart11_median_age.vg.json" role="img" aria-label="Small multiples of median age by state and territory, 2006 to 2025"></div></div>
+            <div class="chart-foot"><p>Each panel highlights one state; grey lines are the others and the dashed line is Australia.</p><p>Source: ABS National, state and territory population, March 2026, Table 3.</p></div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- ===== Chapter 2 ===== -->
+    <section class="chapter" id="use">
+      <div class="wrap">
+        <div class="chapter-head">
+          <span class="chapter-no">Chapter 2</span>
+          <h2>Care use is growing, and unevenly</h2>
+          <p>Home care has expanded fast. How much each state uses it, and how it compares with residential care, differs a lot.</p>
+        </div>
+
+        <article class="story">
+          <div class="story-text">
+            <h3>Home Care Package use grew in every state</h3>
+            <p>Between 2021 and 2025 recipients rose in every state and territory. <span class="hl-coral">Queensland</span> more than doubled (+103%), while the <span class="hl-teal">ACT</span> grew least (+16%).</p>
+          </div>
+          <div class="chart-card">
+            <div class="chart-scroll"><div class="vis" id="vis4" data-spec="js/chart_home_care_heatmap.vg.json" role="img" aria-label="Heatmap of Home Care Package recipients by state, 2021 to 2025"></div></div>
+            <div class="chart-foot"><p>Darker cells mean more people. Counts are at 30 June each year.</p><p>Source: Table 1, 2024–25 Report on the Operation of the Aged Care Act 1997.</p></div>
+          </div>
+        </article>
+
+        <article class="story">
+          <div class="story-text">
+            <h3>Home care and residential care follow different patterns</h3>
+            <p>Per 1,000 residents aged 65+, <span class="hl-teal">South Australia</span> has the highest home care rate (68.0) and the <span class="hl-coral">ACT</span> the lowest (35.3). The Northern Territory has the lowest residential care rate (20.1). These are comparison indicators, not exact utilisation rates, because some recipients are under 65.</p>
+          </div>
+          <div class="chart-card">
+            <div class="chart-scroll"><div class="vis" id="vis5" data-spec="js/chart_state_rates_heatmap.vg.json" role="img" aria-label="Heatmap of care recipients per 1,000 residents aged 65 and over by state and care type, 2025"></div></div>
+            <div class="chart-foot"><p>Numbers in the cells are recipients per 1,000 residents aged 65+.</p><p>Source: AIHW Aged Care Data Snapshot 2025 and ABS population estimates.</p></div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- ===== Chapter 3 ===== -->
+    <section class="chapter" id="where">
+      <div class="wrap">
+        <div class="chapter-head">
+          <span class="chapter-no">Chapter 3</span>
+          <h2>Where care is used, and by whom</h2>
+          <p>Zooming in: which regions rely on home support, where residential care is concentrated, and which ages use each type of care.</p>
+        </div>
+
+        <article class="story">
+          <div class="story-text">
+            <h3>Home support is concentrated in the big population centres</h3>
+            <p>Across 336 SA3 regions, darker areas have more people using Commonwealth Home Support. Grey regions have no reported value; they are not zero.</p>
+          </div>
+          <div class="chart-card">
+            <div class="chart-scroll"><div class="vis" id="vis6" data-spec="js/chart6_sa3_choropleth.vg.json" role="img" aria-label="Map of home support recipients by SA3 region, 2024 to 2025"></div></div>
+            <div class="chart-foot"><p>Hover a region for its name and recipient count.</p><p>Source: AIHW GEN, People using aged care by region, 2024–25.</p></div>
+          </div>
+        </article>
+
+        <article class="story">
+          <div class="story-text">
+            <h3>Where residential care is used most</h3>
+            <p>Circle size shows the number of people in residential care in each state, so the largest states stand out. Compare this with the per-person rates in Chapter 2.</p>
+          </div>
+          <div class="chart-card">
+            <div class="chart-scroll"><div class="vis" id="vis7" data-spec="js/chart5_symbol_map.vg.json" role="img" aria-label="Proportional symbol map of residential care by state"></div></div>
+            <div class="chart-foot"><p>Bigger circles mean more people.</p><p>Source: AIHW.</p></div>
+          </div>
+        </article>
+
+        <article class="story">
+          <div class="story-text">
+            <h3>Different services serve different ages</h3>
+            <p><span class="hl-coral">Permanent residential care</span> peaks at the oldest ages (85–89 for women), while <span class="hl-teal">short-term restorative care</span> peaks earlier (75–79). Use the dropdown under the chart to switch between women and men.</p>
+          </div>
+          <div class="chart-card">
+            <div class="chart-scroll"><div class="vis" id="vis8" data-spec="js/chart13_ridgeline.vg.json" role="img" aria-label="Ridgeline plot of the age distribution of people using each type of aged care, by sex"></div></div>
+            <div class="chart-foot"><p>Each ridge uses the same scale; a gap means no record for that age group.</p><p>Source: AIHW GEN, People using aged care CURF, 30 June 2025.</p></div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- ===== Chapter 4 ===== -->
+    <section class="chapter" id="money">
+      <div class="wrap">
+        <div class="chapter-head">
+          <span class="chapter-no">Chapter 4</span>
+          <h2>Where the money goes</h2>
+          <p>Government spending shows what the system is built around, and how far it has moved toward home care.</p>
+        </div>
+
+        <article class="story">
+          <div class="story-text">
+            <h3>Residential care still takes the biggest share of spending</h3>
+            <p>In 2024–25, <span class="hl-coral">residential care</span> took $24.2 billion (60.8%) of government aged care spending, while <span class="hl-teal">home care and support</span> took $12.9 billion (32.4%).</p>
+          </div>
+          <div class="chart-card">
+            <div class="chart-scroll"><div class="vis" id="vis9" data-spec="js/chart8_treemap.vg.json" role="img" aria-label="Treemap of Australian Government aged care expenditure by category, 2024 to 2025"></div></div>
+            <div class="chart-foot"><p>Rectangle area is proportional to spending.</p><p>Source: Australian Government aged care expenditure, 2024–25.</p></div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- ===== Takeaways ===== -->
+    <section class="takeaway" id="takeaways">
+      <div class="wrap">
+        <h2>So, is care keeping up?</h2>
+        <div class="pure-g">
+          <div class="pure-u-1 pure-u-md-1-3"><div class="takeaway-cell">
+            <h3>Demand is rising</h3>
+            <p>The share of Australians aged 65 and over keeps growing, and the oldest groups are growing fastest.</p>
+          </div></div>
+          <div class="pure-u-1 pure-u-md-1-3"><div class="takeaway-cell">
+            <h3>Care is shifting home</h3>
+            <p>Home Care Package use rose by about two thirds from 2021 to 2025, though spending is still weighted to residential care.</p>
+          </div></div>
+          <div class="pure-u-1 pure-u-md-1-3"><div class="takeaway-cell">
+            <h3>The picture is uneven</h3>
+            <p>States differ in how old they are and how much care they use, so a national average hides local needs.</p>
+          </div></div>
+        </div>
+        <p class="caveat"><strong>A note on the data.</strong> Rates per 1,000 residents aged 65+ are comparison indicators, not exact age-specific utilisation rates. Population and care figures come from different organisations and years, so differences between states should be read as patterns, not precise gaps.</p>
+      </div>
+    </section>
+  </main>
+
+  <!-- ===== Footer ===== -->
+  <footer class="site-footer" id="sources">
+    <div class="wrap">
+      <div class="pure-g">
+        <div class="pure-u-1 pure-u-md-1-2 footer-cell">
+          <h2>Data sources</h2>
+          <ul>
+            <li>Australian Bureau of Statistics (ABS), <em>National, state and territory population</em>, March 2026.</li>
+            <li>Australian Institute of Health and Welfare (AIHW), <em>GEN: People using aged care</em> (CURF, 30 June 2025, and by region, 2024–25).</li>
+            <li>AIHW, <em>Aged Care Data Snapshot 2025</em>.</li>
+            <li>Australian Government, <em>2024–25 Report on the Operation of the Aged Care Act 1997</em>.</li>
+          </ul>
+        </div>
+        <div class="pure-u-1 pure-u-md-1-2 footer-cell">
+          <h2>About this project</h2>
+          <p><strong>Author:</strong> [Your name], student ID [Your ID]. Monash University, FIT3179 Data Visualisation 2, Semester 2, 2026.</p>
+          <p><strong>Acknowledgement of AI use:</strong> I used Claude (Anthropic) to help write Vega-Lite specifications and page layout code. I chose the topic, datasets and design, reviewed the outputs and checked the figures against the sources.</p>
+          <p>Built with <a href="https://vega.github.io/vega-lite/">Vega-Lite</a> and <a href="https://purecss.io/">Pure.css</a>.</p>
+        </div>
+      </div>
+      <p class="fine">Charts use a colour-blind-friendly palette, and meaning is never carried by colour alone.</p>
+    </div>
+  </footer>
+
+  <!-- Vega, Vega-Lite and Vega-Embed -->
+  <script src="https://cdn.jsdelivr.net/npm/vega@5.30.0"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vega-lite@5.21.0"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vega-embed@6.26.0"></script>
+  <script>
+    // Load each chart from the file named in its data-spec attribute.
+    document.querySelectorAll(".vis").forEach(function (el) {
+      var spec = el.getAttribute("data-spec");
+      vegaEmbed(el, spec, { actions: false, renderer: "svg" }).catch(function () {
+        el.innerHTML = '<p class="vis-error">This chart could not be loaded. Check that the file <strong>' + spec + '</strong> exists in the js folder.</p>';
+      });
+    });
+  </script>
+</body>
+</html>
